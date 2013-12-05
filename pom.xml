@@ -28,9 +28,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:svn:svn://andy_jefferson@svn.code.sf.net/p/datanucleus/code/platform/store.json/trunk</connection>
-        <developerConnection>scm:svn:svn+ssh://andy_jefferson@svn.code.sf.net/p/datanucleus/code/platform/store.json/trunk</developerConnection>
-        <url>http://svn.code.sf.net/p/datanucleus/code/platform/store.json/trunk</url>
+        <connection>scm:git:git://github.com/datanucleus/datanucleus-json.git</connection>
+        <url>scm:git:git://github.com/datanucleus/datanucleus-json.git</url>
+        <developerConnection>scm:git:git://github.com/datanucleus/datanucleus-json.git</developerConnection>
     </scm>
 
     <developers>
