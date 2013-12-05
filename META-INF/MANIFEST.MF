@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: JSON Plug-in
+Bundle-SymbolicName: org.datanucleus.store.json;singleton:=true
+Bundle-Version: 3.2.1
+Bundle-Vendor: DataNucleus
+Require-Bundle: org.datanucleus;bundle-version="3.2.0.m3"

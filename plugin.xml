@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+    <extension point="org.datanucleus.store_manager">
+        <store-manager class-name="org.datanucleus.store.json.JsonStoreManager" key="json" url-key="json"/>
+        <store-manager class-name="org.datanucleus.store.json.AmazonS3StoreManager" key="amazons3" url-key="amazons3"/>
+        <store-manager
+              class-name="org.datanucleus.store.json.GoogleStorageStoreManager"
+              key="googlestorage"
+              url-key="googlestorage">
+        </store-manager>
+    </extension>
+
+    <extension point="org.datanucleus.store_connectionfactory">
+        <connectionfactory class-name="org.datanucleus.store.json.ConnectionFactoryImpl"
+            datastore="json" name="json/tx" transactional="true"/>
+        <connectionfactory class-name="org.datanucleus.store.json.ConnectionFactoryImpl"
+            datastore="json" name="json/nontx" transactional="false"/>
+        <connectionfactory class-name="org.datanucleus.store.json.ConnectionFactoryImpl"
+            datastore="amazons3" name="amazons3/tx" transactional="true"/>
+        <connectionfactory class-name="org.datanucleus.store.json.ConnectionFactoryImpl"
+            datastore="amazons3" name="amazons3/nontx" transactional="false"/>
+        <connectionfactory name="googlestorage/nontx"
+              class-name="org.datanucleus.store.json.ConnectionFactoryImpl"
+              datastore="googlestorage"
+              transactional="false">
+        </connectionfactory>
+        <connectionfactory name="googlestorage/nontx"
+              class-name="org.datanucleus.store.json.ConnectionFactoryImpl"
+              datastore="googlestorage"
+              transactional="true">
+        </connectionfactory>
+    </extension>
+
+    <extension point="org.datanucleus.store_query_query">
+        <query class-name="org.datanucleus.store.json.query.JDOQLQuery" datastore="json" name="JDOQL"/>
+        <query class-name="org.datanucleus.store.json.query.JPQLQuery" datastore="json" name="JPQL"/>
+        <query class-name="org.datanucleus.store.json.query.JDOQLQuery" datastore="amazons3" name="JDOQL"/>
+        <query class-name="org.datanucleus.store.json.query.JPQLQuery" datastore="amazons3" name="JPQL"/>
+        <query
+              class-name="org.datanucleus.store.json.query.JDOQLQuery"
+              datastore="googlestorage" name="JDOQL">
+        </query>
+       <query
+             class-name="org.datanucleus.store.json.query.JPQLQuery"
+             datastore="googlestorage" name="JPQL">
+       </query>
+    </extension>
+
+    <extension point="org.datanucleus.persistence_properties">
+       <persistence-property name="datanucleus.cloud.storage.bucket"/>
+    </extension>
+</plugin>
