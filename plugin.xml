@@ -16,11 +16,10 @@
             datastore="amazons3" transactional="true"/>
         <connectionfactory name="amazons3/nontx" class-name="org.datanucleus.store.json.ConnectionFactoryImpl"
             datastore="amazons3" transactional="false"/>
+        <connectionfactory name="googlestorage/tx" class-name="org.datanucleus.store.json.ConnectionFactoryImpl"
+            datastore="googlestorage" transactional="true"/>
         <connectionfactory name="googlestorage/nontx" class-name="org.datanucleus.store.json.ConnectionFactoryImpl"
             datastore="googlestorage" transactional="false"/>
-        <connectionfactory name="googlestorage/nontx" class-name="org.datanucleus.store.json.ConnectionFactoryImpl"
-            datastore="googlestorage" transactional="true">
-        </connectionfactory>
     </extension>
 
     <extension point="org.datanucleus.store_query_query">
