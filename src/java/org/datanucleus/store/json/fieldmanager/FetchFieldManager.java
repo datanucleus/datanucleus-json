@@ -36,7 +36,6 @@ import org.datanucleus.identity.IdentityUtils;
 import org.datanucleus.metadata.AbstractClassMetaData;
 import org.datanucleus.metadata.AbstractMemberMetaData;
 import org.datanucleus.metadata.ColumnMetaData;
-import org.datanucleus.metadata.FieldRole;
 import org.datanucleus.metadata.MetaDataUtils;
 import org.datanucleus.metadata.RelationType;
 import org.datanucleus.state.ObjectProvider;
@@ -48,7 +47,6 @@ import org.datanucleus.store.types.TypeManager;
 import org.datanucleus.store.types.converters.TypeConverter;
 import org.datanucleus.util.ClassUtils;
 import org.datanucleus.util.TypeConversionHelper;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -566,7 +564,19 @@ public class FetchFieldManager extends AbstractFieldManager
                 return null;
             }
 
-            return IdentityUtils.getObjectFromIdString(idStr, mmd, FieldRole.ROLE_FIELD, ec, true);
+            Object obj = null;
+            AbstractClassMetaData memberCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
+            if (memberCmd.usesSingleFieldIdentityClass() && idStr.indexOf(':') > 0)
+            {
+                // Uses persistent identity
+                obj = IdentityUtils.getObjectFromPersistableIdentity(idStr, memberCmd, ec);
+            }
+            else
+            {
+                // Uses legacy identity
+                obj = IdentityUtils.getObjectFromIdString(idStr, memberCmd, ec, true);
+            }
+            return obj;
         }
         else if (RelationType.isRelationMultiValued(relationType))
         {
@@ -590,7 +600,17 @@ public class FetchFieldManager extends AbstractFieldManager
                 for (int i=0;i<array.length();i++)
                 {
                     String idStr = (String)array.get(i);
-                    Object element = IdentityUtils.getObjectFromIdString(idStr, elementCmd, ec, true);
+                    Object element = null;
+                    if (elementCmd.usesSingleFieldIdentityClass() && idStr.indexOf(':') > 0)
+                    {
+                        // Uses persistent identity
+                        element = IdentityUtils.getObjectFromPersistableIdentity(idStr, elementCmd, ec);
+                    }
+                    else
+                    {
+                        // Uses legacy identity
+                        element = IdentityUtils.getObjectFromIdString(idStr, elementCmd, ec, true);
+                    }
                     coll.add(element);
                 }
 
@@ -611,7 +631,17 @@ public class FetchFieldManager extends AbstractFieldManager
                 for (int i=0;i<array.length();i++)
                 {
                     String idStr = (String)array.get(i);
-                    Object element = IdentityUtils.getObjectFromIdString(idStr, elementCmd, ec, true);
+                    Object element = null;
+                    if (elementCmd.usesSingleFieldIdentityClass() && idStr.indexOf(':') > 0)
+                    {
+                        // Uses persistent identity
+                        element = IdentityUtils.getObjectFromPersistableIdentity(idStr, elementCmd, ec);
+                    }
+                    else
+                    {
+                        // Uses legacy identity
+                        element = IdentityUtils.getObjectFromIdString(idStr, elementCmd, ec, true);
+                    }
                     Array.set(arrayField, i, element);
                 }
 
@@ -648,7 +678,16 @@ public class FetchFieldManager extends AbstractFieldManager
                     {
                         // The jsonKey is the string form of the identity
                         String idStr = (String)jsonKey;
-                        key = IdentityUtils.getObjectFromIdString(idStr, keyCmd, ec, true);
+                        if (keyCmd.usesSingleFieldIdentityClass() && idStr.indexOf(':') > 0)
+                        {
+                            // Uses persistent identity
+                            key = IdentityUtils.getObjectFromPersistableIdentity(idStr, keyCmd, ec);
+                        }
+                        else
+                        {
+                            // Uses legacy identity
+                            key = IdentityUtils.getObjectFromIdString(idStr, keyCmd, ec, true);
+                        }
                     }
                     else
                     {
@@ -662,7 +701,16 @@ public class FetchFieldManager extends AbstractFieldManager
                     {
                         // The jsonVal is the string form of the identity
                         String idStr = (String)jsonVal;
-                        val = IdentityUtils.getObjectFromIdString(idStr, valCmd, ec, true);
+                        if (valCmd.usesSingleFieldIdentityClass() && idStr.indexOf(':') > 0)
+                        {
+                            // Uses persistent identity
+                            val = IdentityUtils.getObjectFromPersistableIdentity(idStr, valCmd, ec);
+                        }
+                        else
+                        {
+                            // Uses legacy identity
+                            val = IdentityUtils.getObjectFromIdString(idStr, valCmd, ec, true);
+                        }
                     }
                     else
                     {

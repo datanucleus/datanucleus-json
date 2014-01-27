@@ -29,6 +29,7 @@ import java.util.Map;
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ExecutionContext;
 import org.datanucleus.exceptions.NucleusException;
+import org.datanucleus.identity.IdentityUtils;
 import org.datanucleus.metadata.AbstractClassMetaData;
 import org.datanucleus.metadata.AbstractMemberMetaData;
 import org.datanucleus.metadata.ColumnMetaData;
@@ -47,12 +48,15 @@ import org.json.JSONObject;
  */
 public class StoreFieldManager extends AbstractStoreFieldManager
 {
+    ExecutionContext ec;
+
     JSONObject jsonobj;
     StoreManager storeMgr;
 
     public StoreFieldManager(ObjectProvider op, JSONObject jsonobj, boolean insert)
     {
         super(op, insert);
+        this.ec = op.getExecutionContext();
 
         this.storeMgr = op.getExecutionContext().getStoreManager();
         this.jsonobj = jsonobj;
@@ -390,7 +394,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
             // 1-1, N-1 relation, so store the "id"
             Object valuePC = op.getExecutionContext().persistObjectInternal(value, op, fieldNumber, -1);
             Object valueId = op.getExecutionContext().getApiAdapter().getIdForObject(valuePC);
-            jsonobj.put(name, valueId);
+            jsonobj.put(name, IdentityUtils.getPersistableIdentityForId(ec.getApiAdapter(), valueId));
             return;
         }
         else if (RelationType.isRelationMultiValued(relationType))
@@ -406,7 +410,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                     Object element = collIter.next();
                     Object elementPC = op.getExecutionContext().persistObjectInternal(element, op, fieldNumber, -1);
                     Object elementID = op.getExecutionContext().getApiAdapter().getIdForObject(elementPC);
-                    idColl.add(elementID.toString());
+                    idColl.add(IdentityUtils.getPersistableIdentityForId(ec.getApiAdapter(), elementID));
                 }
                 jsonobj.put(name, idColl);
                 return;
@@ -419,7 +423,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                     Object element = Array.get(value, i);
                     Object elementPC = op.getExecutionContext().persistObjectInternal(element, op, fieldNumber, -1);
                     Object elementID = op.getExecutionContext().getApiAdapter().getIdForObject(elementPC);
-                    ids.add(elementID.toString());
+                    ids.add(IdentityUtils.getPersistableIdentityForId(ec.getApiAdapter(), elementID));
                 }
                 jsonobj.put(name, ids);
                 return;
@@ -439,8 +443,9 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                     Object val = null;
                     if (keyCmd != null)
                     {
-                        Object keyPC = op.getExecutionContext().persistObjectInternal(entry.getKey(), op, fieldNumber, -1);
-                        key = op.getExecutionContext().getApiAdapter().getIdForObject(keyPC);
+                        Object keyPC = ec.persistObjectInternal(entry.getKey(), op, fieldNumber, -1);
+                        key = ec.getApiAdapter().getIdForObject(keyPC);
+                        key = IdentityUtils.getPersistableIdentityForId(ec.getApiAdapter(), key);
                     }
                     else
                     {
@@ -448,8 +453,9 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                     }
                     if (valCmd != null)
                     {
-                        Object valPC = op.getExecutionContext().persistObjectInternal(entry.getValue(), op, fieldNumber, -1);
-                        val = op.getExecutionContext().getApiAdapter().getIdForObject(valPC);
+                        Object valPC = ec.persistObjectInternal(entry.getValue(), op, fieldNumber, -1);
+                        val = ec.getApiAdapter().getIdForObject(valPC);
+                        val = IdentityUtils.getPersistableIdentityForId(ec.getApiAdapter(), val);
                     }
                     else
                     {
