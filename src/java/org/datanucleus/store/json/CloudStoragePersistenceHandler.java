@@ -39,7 +39,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ExecutionContext;
 import org.datanucleus.FetchPlan;
-import org.datanucleus.PersistenceConfiguration;
+import org.datanucleus.Configuration;
 import org.datanucleus.exceptions.NucleusDataStoreException;
 import org.datanucleus.exceptions.NucleusException;
 import org.datanucleus.identity.IdentityUtils;
@@ -406,7 +406,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
     
     private String getBucket()
     {
-        PersistenceConfiguration conf = storeMgr.getNucleusContext().getPersistenceConfiguration();
+        Configuration conf = storeMgr.getNucleusContext().getConfiguration();
         return conf.getStringProperty("datanucleus.cloud.storage.bucket");
     }
 }

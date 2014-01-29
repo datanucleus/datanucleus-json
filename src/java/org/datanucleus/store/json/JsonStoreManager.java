@@ -25,13 +25,13 @@ import java.util.Set;
 
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ExecutionContext;
-import org.datanucleus.NucleusContext;
+import org.datanucleus.PersistenceNucleusContext;
 import org.datanucleus.store.AbstractStoreManager;
 import org.datanucleus.store.NucleusConnection;
 
 public class JsonStoreManager extends AbstractStoreManager
 {
-    public JsonStoreManager(ClassLoaderResolver clr, NucleusContext ctx, Map<String, Object> props)
+    public JsonStoreManager(ClassLoaderResolver clr, PersistenceNucleusContext ctx, Map<String, Object> props)
     {
         super("json", clr, ctx, props);
 
@@ -42,7 +42,7 @@ public class JsonStoreManager extends AbstractStoreManager
         logConfiguration();
     }
 
-    public NucleusConnection getNucleusConnection(ExecutionContext om)
+    public NucleusConnection getNucleusConnection(ExecutionContext ec)
     {
         throw new UnsupportedOperationException();
     }
