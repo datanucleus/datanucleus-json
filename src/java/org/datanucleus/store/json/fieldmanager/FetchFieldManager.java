@@ -40,7 +40,7 @@ import org.datanucleus.metadata.MetaDataUtils;
 import org.datanucleus.metadata.RelationType;
 import org.datanucleus.state.ObjectProvider;
 import org.datanucleus.store.StoreManager;
-import org.datanucleus.store.fieldmanager.AbstractFieldManager;
+import org.datanucleus.store.fieldmanager.AbstractFetchFieldManager;
 import org.datanucleus.store.schema.naming.ColumnType;
 import org.datanucleus.store.types.SCOUtils;
 import org.datanucleus.store.types.TypeManager;
@@ -54,37 +54,29 @@ import org.json.JSONObject;
 /**
  * FieldManager for fetching from JSON.
  */
-public class FetchFieldManager extends AbstractFieldManager
+public class FetchFieldManager extends AbstractFetchFieldManager
 {
-    protected final ObjectProvider op;
-    protected final AbstractClassMetaData acmd;
-    protected final ExecutionContext ec;
     protected final JSONObject result;
     protected StoreManager storeMgr;
 
-    public FetchFieldManager(ExecutionContext ec, AbstractClassMetaData acmd, JSONObject result)
+    public FetchFieldManager(ExecutionContext ec, AbstractClassMetaData cmd, JSONObject result)
     {
-        this.acmd = acmd;
-        this.ec = ec;
+        super(ec, cmd);
         this.result = result;
-        this.op = null;
         this.storeMgr = ec.getStoreManager();
     }
 
     public FetchFieldManager(ObjectProvider op, JSONObject result)
     {
-        this.acmd = op.getClassMetaData();
-        this.ec = op.getExecutionContext();
+        super(op);
         this.result = result;
-        this.op = op;
         this.storeMgr = ec.getStoreManager();
     }
 
     public boolean fetchBooleanField(int fieldNumber)
     {
         String memberName =
-            storeMgr.getNamingFactory().getColumnName(
-                acmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
         if (result.isNull(memberName))
         {
             return false;
@@ -103,8 +95,7 @@ public class FetchFieldManager extends AbstractFieldManager
     public byte fetchByteField(int fieldNumber)
     {
         String memberName =
-            storeMgr.getNamingFactory().getColumnName(
-                acmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
         if (result.isNull(memberName))
         {
             return 0;
@@ -124,8 +115,7 @@ public class FetchFieldManager extends AbstractFieldManager
     public char fetchCharField(int fieldNumber)
     {
         String memberName =
-            storeMgr.getNamingFactory().getColumnName(
-                acmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
         if (result.isNull(memberName))
         {
             return 0;
@@ -144,8 +134,7 @@ public class FetchFieldManager extends AbstractFieldManager
     public double fetchDoubleField(int fieldNumber)
     {
         String memberName =
-            storeMgr.getNamingFactory().getColumnName(
-                acmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
         if (result.isNull(memberName))
         {
             return 0;
@@ -164,8 +153,7 @@ public class FetchFieldManager extends AbstractFieldManager
     public float fetchFloatField(int fieldNumber)
     {
         String memberName =
-            storeMgr.getNamingFactory().getColumnName(
-                acmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
         if (result.isNull(memberName))
         {
             return 0;
@@ -184,8 +172,7 @@ public class FetchFieldManager extends AbstractFieldManager
     public int fetchIntField(int fieldNumber)
     {
         String memberName =
-            storeMgr.getNamingFactory().getColumnName(
-                acmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
         if (result.isNull(memberName))
         {
             return 0;
@@ -204,8 +191,7 @@ public class FetchFieldManager extends AbstractFieldManager
     public long fetchLongField(int fieldNumber)
     {
         String memberName =
-            storeMgr.getNamingFactory().getColumnName(
-                acmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
         if (result.isNull(memberName))
         {
             return 0;
@@ -224,8 +210,7 @@ public class FetchFieldManager extends AbstractFieldManager
     public short fetchShortField(int fieldNumber)
     {
         String memberName =
-            storeMgr.getNamingFactory().getColumnName(
-                acmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
         if (result.isNull(memberName))
         {
             return 0;
@@ -244,8 +229,7 @@ public class FetchFieldManager extends AbstractFieldManager
     public String fetchStringField(int fieldNumber)
     {
         String memberName =
-            storeMgr.getNamingFactory().getColumnName(
-                acmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
         if (result.isNull(memberName))
         {
             return null;
@@ -263,7 +247,7 @@ public class FetchFieldManager extends AbstractFieldManager
 
     public Object fetchObjectField(int fieldNumber)
     {
-        AbstractMemberMetaData mmd = acmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber);
+        AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber);
         String memberName =
             storeMgr.getNamingFactory().getColumnName(mmd, ColumnType.COLUMN);
         if (result.isNull(memberName))

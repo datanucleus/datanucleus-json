@@ -48,16 +48,12 @@ import org.json.JSONObject;
  */
 public class StoreFieldManager extends AbstractStoreFieldManager
 {
-    ExecutionContext ec;
-
     JSONObject jsonobj;
     StoreManager storeMgr;
 
     public StoreFieldManager(ObjectProvider op, JSONObject jsonobj, boolean insert)
     {
         super(op, insert);
-        this.ec = op.getExecutionContext();
-
         this.storeMgr = op.getExecutionContext().getStoreManager();
         this.jsonobj = jsonobj;
 
