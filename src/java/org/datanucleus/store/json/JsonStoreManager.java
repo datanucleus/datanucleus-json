@@ -55,6 +55,8 @@ public class JsonStoreManager extends AbstractStoreManager
     {
         Set set = new HashSet();
         set.add(StoreManager.OPTION_APPLICATION_ID);
+        set.add(StoreManager.OPTION_APPLICATION_COMPOSITE_ID);
+        set.add(StoreManager.OPTION_DATASTORE_ID);
         set.add(StoreManager.OPTION_TXN_ISOLATION_READ_COMMITTED);
         set.add(StoreManager.OPTION_ORM);
         return set;
