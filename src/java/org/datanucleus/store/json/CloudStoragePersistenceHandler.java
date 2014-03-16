@@ -50,6 +50,7 @@ import org.datanucleus.state.ObjectProvider;
 import org.datanucleus.store.FieldValues;
 import org.datanucleus.store.StoreManager;
 import org.datanucleus.store.connection.ManagedConnection;
+import org.datanucleus.store.fieldmanager.FieldManager;
 import org.datanucleus.store.json.fieldmanager.FetchFieldManager;
 import org.datanucleus.store.json.fieldmanager.StoreFieldManager;
 import org.datanucleus.store.schema.naming.ColumnType;
@@ -345,6 +346,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                 final JSONObject json = jsonarray.getJSONObject(i);
 
                 Object id = null;
+                final FieldManager fm = new FetchFieldManager(ec, cmd, json);
                 if (cmd.getIdentityType() == IdentityType.DATASTORE)
                 {
                     String memberName = storeMgr.getNamingFactory().getColumnName(cmd, ColumnType.DATASTOREID_COLUMN);
@@ -360,7 +362,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                 }
                 else if (cmd.getIdentityType() == IdentityType.APPLICATION)
                 {
-                    id = IdentityUtils.getApplicationIdentityForResultSetRow(ec, cmd, null, true, new FetchFieldManager(ec, cmd, json));
+                    id = IdentityUtils.getApplicationIdentityForResultSetRow(ec, cmd, null, true, fm);
                 }
 
                 results.add(ec.findObject(id, new FieldValues()
@@ -372,12 +374,12 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                     
                     public void fetchNonLoadedFields(ObjectProvider sm)
                     {
-                        sm.replaceNonLoadedFields(cmd.getPKMemberPositions(), new FetchFieldManager(ec, cmd, json));
+                        sm.replaceNonLoadedFields(cmd.getPKMemberPositions(), fm);
                     }
                     
                     public void fetchFields(ObjectProvider sm)
                     {
-                        sm.replaceFields(cmd.getPKMemberPositions(), new FetchFieldManager(ec, cmd, json));
+                        sm.replaceFields(cmd.getPKMemberPositions(), fm);
                     }
                 }, null, ignoreCache, false));
             }

@@ -447,7 +447,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             long startTime = System.currentTimeMillis();
             if (NucleusLogger.DATASTORE_RETRIEVE.isDebugEnabled())
             {
-                NucleusLogger.DATASTORE_RETRIEVE.debug(LOCALISER_JSON.msg("HBase.Fetch.Start", 
+                NucleusLogger.DATASTORE_RETRIEVE.debug(LOCALISER_JSON.msg("JSON.Fetch.Start", 
                     op.getObjectAsPrintable(), op.getInternalObjectId()));
             }
 
@@ -486,7 +486,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
 
             if (NucleusLogger.DATASTORE_RETRIEVE.isDebugEnabled())
             {
-                NucleusLogger.DATASTORE_RETRIEVE.debug(LOCALISER_JSON.msg("HBase.ExecutionTime",
+                NucleusLogger.DATASTORE_RETRIEVE.debug(LOCALISER_JSON.msg("JSON.ExecutionTime",
                     (System.currentTimeMillis() - startTime)));
             }
         }
