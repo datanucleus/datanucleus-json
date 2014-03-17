@@ -43,8 +43,8 @@ import org.datanucleus.store.StoreManager;
 import org.datanucleus.store.fieldmanager.AbstractFetchFieldManager;
 import org.datanucleus.store.schema.naming.ColumnType;
 import org.datanucleus.store.types.SCOUtils;
-import org.datanucleus.store.types.TypeManager;
 import org.datanucleus.store.types.converters.TypeConverter;
+import org.datanucleus.store.types.converters.TypeConverterHelper;
 import org.datanucleus.util.ClassUtils;
 import org.datanucleus.util.TypeConversionHelper;
 import org.json.JSONArray;
@@ -285,7 +285,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             {
                 // User-defined converter
                 TypeConverter conv = ec.getNucleusContext().getTypeManager().getTypeConverterForName(mmd.getTypeConverterName());
-                Class datastoreType = TypeManager.getDatastoreTypeForTypeConverter(conv, mmd.getType());
+                Class datastoreType = TypeConverterHelper.getDatastoreTypeForTypeConverter(conv, mmd.getType());
                 if (datastoreType == String.class)
                 {
                     returnValue = conv.toMemberType(result.getString(memberName));
