@@ -495,13 +495,9 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                 // Fallback to built-in type converters
                 boolean useLong = false;
                 ColumnMetaData[] colmds = mmd.getColumnMetaData();
-                if (colmds != null && colmds.length == 1)
+                if (colmds != null && colmds.length == 1 && MetaDataUtils.isJdbcTypeNumeric(colmds[0].getJdbcType()))
                 {
-                    String jdbc = colmds[0].getJdbcType();
-                    if (jdbc != null && (jdbc.equalsIgnoreCase("INTEGER") || jdbc.equalsIgnoreCase("NUMERIC")))
-                    {
-                        useLong = true;
-                    }
+                    useLong = true;
                 }
                 TypeConverter strConv = ec.getNucleusContext().getTypeManager().getTypeConverterForType(mmd.getType(), String.class);
                 TypeConverter longConv = ec.getNucleusContext().getTypeManager().getTypeConverterForType(mmd.getType(), Long.class);
