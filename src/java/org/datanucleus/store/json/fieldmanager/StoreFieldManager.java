@@ -267,19 +267,29 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
         if (value == null)
         {
+            // TODO Cater for multiple columns
             jsonobj.put(name, JSONObject.NULL);
             return;
         }
 
         if (relationType == RelationType.NONE)
         {
-            // TODO Use mapping converter
-            if (mmd.getTypeConverterName() != null)
+            if (mapping.getTypeConverter() != null)
             {
-                // User-defined converter
-                TypeConverter conv = op.getExecutionContext().getTypeManager().getTypeConverterForName(mmd.getTypeConverterName());
-                jsonobj.put(name, conv.toDatastoreType(value));
-                return;
+                // Persist using the provided converter
+                Object datastoreValue = mapping.getTypeConverter().toDatastoreType(value);
+                if (mapping.getNumberOfColumns() > 1)
+                {
+                    for (int i=0;i<mapping.getNumberOfColumns();i++)
+                    {
+                        Object colValue = Array.get(datastoreValue, i);
+                        jsonobj.put(mapping.getColumn(i).getIdentifier(), colValue);
+                    }
+                }
+                else
+                {
+                    jsonobj.put(mapping.getColumn(0).getIdentifier(), datastoreValue);
+                }
             }
             else if (value instanceof Boolean)
             {

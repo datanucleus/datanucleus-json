@@ -279,40 +279,52 @@ public class FetchFieldManager extends AbstractFetchFieldManager
         RelationType relationType = mmd.getRelationType(clr);
         if (relationType == RelationType.NONE)
         {
-            // TODO Use mapping type Converter
             Object returnValue = null;
-            if (mmd.getTypeConverterName() != null)
+            if (mapping.getTypeConverter() != null)
             {
-                // User-defined converter
                 TypeConverter conv = ec.getNucleusContext().getTypeManager().getTypeConverterForName(mmd.getTypeConverterName());
-                Class datastoreType = TypeConverterHelper.getDatastoreTypeForTypeConverter(conv, mmd.getType());
-                if (datastoreType == String.class)
+                if (mapping.getNumberOfColumns() > 1)
                 {
-                    returnValue = conv.toMemberType(result.getString(memberName));
+                    // TODO Cater for int array etc
+//                    Object[] values = new Object[mapping.getNumberOfColumns()];
+                    for (int i=0;i<mapping.getNumberOfColumns();i++)
+                    {
+                        // TODO Extract the column values
+                    }
+                    return null;
                 }
-                else if (datastoreType == Boolean.class)
+                else
                 {
-                    returnValue = conv.toMemberType(result.getBoolean(memberName));
-                }
-                else if (datastoreType == Double.class)
-                {
-                    returnValue = conv.toMemberType(result.getDouble(memberName));
-                }
-                else if (datastoreType == Float.class)
-                {
-                    returnValue = conv.toMemberType(result.getDouble(memberName));
-                }
-                else if (datastoreType == Integer.class)
-                {
-                    returnValue = conv.toMemberType(result.getInt(memberName));
-                }
-                else if (datastoreType == Long.class)
-                {
-                    returnValue = conv.toMemberType(result.getLong(memberName));
-                }
-                if (op != null)
-                {
-                    op.wrapSCOField(mmd.getAbsoluteFieldNumber(), returnValue, false, false, true);
+                    Class datastoreType = TypeConverterHelper.getDatastoreTypeForTypeConverter(conv, mmd.getType());
+                    if (datastoreType == String.class)
+                    {
+                        returnValue = conv.toMemberType(result.getString(memberName));
+                    }
+                    else if (datastoreType == Boolean.class)
+                    {
+                        returnValue = conv.toMemberType(result.getBoolean(memberName));
+                    }
+                    else if (datastoreType == Double.class)
+                    {
+                        returnValue = conv.toMemberType(result.getDouble(memberName));
+                    }
+                    else if (datastoreType == Float.class)
+                    {
+                        returnValue = conv.toMemberType(result.getDouble(memberName));
+                    }
+                    else if (datastoreType == Integer.class)
+                    {
+                        returnValue = conv.toMemberType(result.getInt(memberName));
+                    }
+                    else if (datastoreType == Long.class)
+                    {
+                        returnValue = conv.toMemberType(result.getLong(memberName));
+                    }
+                    if (op != null)
+                    {
+                        returnValue = op.wrapSCOField(mmd.getAbsoluteFieldNumber(), returnValue, false, false, true);
+                    }
+                    return returnValue;
                 }
             }
             else if (Boolean.class.isAssignableFrom(mmd.getType()))
