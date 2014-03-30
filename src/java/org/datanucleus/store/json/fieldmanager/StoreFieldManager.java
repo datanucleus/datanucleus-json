@@ -32,13 +32,12 @@ import org.datanucleus.exceptions.NucleusException;
 import org.datanucleus.identity.IdentityUtils;
 import org.datanucleus.metadata.AbstractClassMetaData;
 import org.datanucleus.metadata.AbstractMemberMetaData;
-import org.datanucleus.metadata.ColumnMetaData;
 import org.datanucleus.metadata.MetaDataUtils;
 import org.datanucleus.metadata.RelationType;
 import org.datanucleus.state.ObjectProvider;
-import org.datanucleus.store.StoreManager;
 import org.datanucleus.store.fieldmanager.AbstractStoreFieldManager;
-import org.datanucleus.store.schema.naming.ColumnType;
+import org.datanucleus.store.schema.table.MemberColumnMapping;
+import org.datanucleus.store.schema.table.Table;
 import org.datanucleus.store.types.converters.TypeConverter;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,13 +47,13 @@ import org.json.JSONObject;
  */
 public class StoreFieldManager extends AbstractStoreFieldManager
 {
-    JSONObject jsonobj;
-    StoreManager storeMgr;
+    protected Table table;
+    protected JSONObject jsonobj;
 
-    public StoreFieldManager(ObjectProvider op, JSONObject jsonobj, boolean insert)
+    public StoreFieldManager(ObjectProvider op, JSONObject jsonobj, boolean insert, Table table)
     {
         super(op, insert);
-        this.storeMgr = op.getExecutionContext().getStoreManager();
+        this.table = table;
         this.jsonobj = jsonobj;
 
         try
@@ -67,6 +66,11 @@ public class StoreFieldManager extends AbstractStoreFieldManager
         }
     }
 
+    protected MemberColumnMapping getColumnMapping(int fieldNumber)
+    {
+        return table.getMemberColumnMappingForMember(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber));
+    }
+
     public void storeBooleanField(int fieldNumber, boolean value)
     {
         if (!isStorable(fieldNumber))
@@ -74,11 +78,9 @@ public class StoreFieldManager extends AbstractStoreFieldManager
             return;
         }
 
-        AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber);
-        String name = storeMgr.getNamingFactory().getColumnName(mmd, ColumnType.COLUMN);
         try
         {
-            jsonobj.put(name, (boolean)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), (boolean)value);
         }
         catch (JSONException e)
         {
@@ -93,11 +95,9 @@ public class StoreFieldManager extends AbstractStoreFieldManager
             return;
         }
 
-        AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber);
-        String name = storeMgr.getNamingFactory().getColumnName(mmd, ColumnType.COLUMN);
         try
         {
-            jsonobj.put(name, (int)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), (int)value);
         }
         catch (JSONException e)
         {
@@ -112,11 +112,9 @@ public class StoreFieldManager extends AbstractStoreFieldManager
             return;
         }
 
-        AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber);
-        String name = storeMgr.getNamingFactory().getColumnName(mmd, ColumnType.COLUMN);
         try
         {
-            jsonobj.put(name, new Character(value));
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), new Character(value));
         }
         catch (JSONException e)
         {
@@ -131,11 +129,9 @@ public class StoreFieldManager extends AbstractStoreFieldManager
             return;
         }
 
-        AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber);
-        String name = storeMgr.getNamingFactory().getColumnName(mmd, ColumnType.COLUMN);
         try
         {
-            jsonobj.put(name, (double)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), (double)value);
         }
         catch (JSONException e)
         {
@@ -150,11 +146,9 @@ public class StoreFieldManager extends AbstractStoreFieldManager
             return;
         }
 
-        AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber);
-        String name = storeMgr.getNamingFactory().getColumnName(mmd, ColumnType.COLUMN);
         try
         {
-            jsonobj.put(name, (double)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), (double)value);
         }
         catch (JSONException e)
         {
@@ -169,11 +163,9 @@ public class StoreFieldManager extends AbstractStoreFieldManager
             return;
         }
 
-        AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber);
-        String name = storeMgr.getNamingFactory().getColumnName(mmd, ColumnType.COLUMN);
         try
         {
-            jsonobj.put(name, (int)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), (int)value);
         }
         catch (JSONException e)
         {
@@ -188,11 +180,9 @@ public class StoreFieldManager extends AbstractStoreFieldManager
             return;
         }
 
-        AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber);
-        String name = storeMgr.getNamingFactory().getColumnName(mmd, ColumnType.COLUMN);
         try
         {
-            jsonobj.put(name, (long)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), (long)value);
         }
         catch (JSONException e)
         {
@@ -207,11 +197,9 @@ public class StoreFieldManager extends AbstractStoreFieldManager
             return;
         }
 
-        AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber);
-        String name = storeMgr.getNamingFactory().getColumnName(mmd, ColumnType.COLUMN);
         try
         {
-            jsonobj.put(name, (int)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), (int)value);
         }
         catch (JSONException e)
         {
@@ -226,17 +214,15 @@ public class StoreFieldManager extends AbstractStoreFieldManager
             return;
         }
 
-        AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber);
-        String name = storeMgr.getNamingFactory().getColumnName(mmd, ColumnType.COLUMN);
         try
         {
             if (value == null)
             {
-                jsonobj.put(name, JSONObject.NULL);
+                jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), JSONObject.NULL);
             }
             else
             {
-                jsonobj.put(name, value);
+                jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), value);
             }
         }
         catch (JSONException e)
@@ -275,16 +261,19 @@ public class StoreFieldManager extends AbstractStoreFieldManager
     protected void storeObjectFieldInternal(int fieldNumber, Object value, AbstractMemberMetaData mmd, ClassLoaderResolver clr)
     throws JSONException
     {
+        MemberColumnMapping mapping = getColumnMapping(fieldNumber);
         RelationType relationType = mmd.getRelationType(clr);
-        String name = storeMgr.getNamingFactory().getColumnName(mmd, ColumnType.COLUMN);
+        String name = mapping.getColumn(0).getIdentifier();
 
         if (value == null)
         {
             jsonobj.put(name, JSONObject.NULL);
             return;
         }
-        else if (relationType == RelationType.NONE)
+
+        if (relationType == RelationType.NONE)
         {
+            // TODO Use mapping converter
             if (mmd.getTypeConverterName() != null)
             {
                 // User-defined converter
@@ -310,9 +299,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
             }
             else if (value instanceof Enum)
             {
-                ColumnMetaData[] colmds = mmd.getColumnMetaData();
-                boolean useNumeric = MetaDataUtils.persistColumnAsNumeric(colmds != null ? colmds[0] : null);
-                if (useNumeric)
+                if (MetaDataUtils.isJdbcTypeNumeric(mapping.getColumn(0).getJdbcType()))
                 {
                     jsonobj.put(name, ((Enum)value).ordinal());
                 }
@@ -341,16 +328,8 @@ public class StoreFieldManager extends AbstractStoreFieldManager
             else
             {
                 // See if we can persist it as a Long/String
-                boolean useLong = false;
-                ColumnMetaData[] colmds = mmd.getColumnMetaData();
-                if (colmds != null && colmds.length == 1 && MetaDataUtils.isJdbcTypeNumeric(colmds[0].getJdbcType()))
-                {
-                    useLong = true;
-                }
-                TypeConverter strConv = 
-                    op.getExecutionContext().getNucleusContext().getTypeManager().getTypeConverterForType(mmd.getType(), String.class);
-                TypeConverter longConv = 
-                    op.getExecutionContext().getNucleusContext().getTypeManager().getTypeConverterForType(mmd.getType(), Long.class);
+                boolean useLong = MetaDataUtils.isJdbcTypeNumeric(mapping.getColumn(0).getJdbcType());
+                TypeConverter longConv = ec.getNucleusContext().getTypeManager().getTypeConverterForType(mmd.getType(), Long.class);
                 if (useLong)
                 {
                     if (longConv != null)
@@ -361,6 +340,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 }
                 else
                 {
+                    TypeConverter strConv = ec.getNucleusContext().getTypeManager().getTypeConverterForType(mmd.getType(), String.class);
                     if (strConv != null)
                     {
                         jsonobj.put(name, strConv.toDatastoreType(value));
@@ -384,8 +364,8 @@ public class StoreFieldManager extends AbstractStoreFieldManager
         else if (RelationType.isRelationSingleValued(relationType))
         {
             // 1-1, N-1 relation, so store the "id"
-            Object valuePC = op.getExecutionContext().persistObjectInternal(value, op, fieldNumber, -1);
-            Object valueId = op.getExecutionContext().getApiAdapter().getIdForObject(valuePC);
+            Object valuePC = ec.persistObjectInternal(value, op, fieldNumber, -1);
+            Object valueId = ec.getApiAdapter().getIdForObject(valuePC);
             jsonobj.put(name, IdentityUtils.getPersistableIdentityForId(ec.getApiAdapter(), valueId));
             return;
         }
@@ -400,8 +380,8 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 while (collIter.hasNext())
                 {
                     Object element = collIter.next();
-                    Object elementPC = op.getExecutionContext().persistObjectInternal(element, op, fieldNumber, -1);
-                    Object elementID = op.getExecutionContext().getApiAdapter().getIdForObject(elementPC);
+                    Object elementPC = ec.persistObjectInternal(element, op, fieldNumber, -1);
+                    Object elementID = ec.getApiAdapter().getIdForObject(elementPC);
                     idColl.add(IdentityUtils.getPersistableIdentityForId(ec.getApiAdapter(), elementID));
                 }
                 jsonobj.put(name, idColl);
@@ -413,8 +393,8 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 for (int i=0;i<Array.getLength(value);i++)
                 {
                     Object element = Array.get(value, i);
-                    Object elementPC = op.getExecutionContext().persistObjectInternal(element, op, fieldNumber, -1);
-                    Object elementID = op.getExecutionContext().getApiAdapter().getIdForObject(elementPC);
+                    Object elementPC = ec.persistObjectInternal(element, op, fieldNumber, -1);
+                    Object elementID = ec.getApiAdapter().getIdForObject(elementPC);
                     ids.add(IdentityUtils.getPersistableIdentityForId(ec.getApiAdapter(), elementID));
                 }
                 jsonobj.put(name, ids);
@@ -422,8 +402,8 @@ public class StoreFieldManager extends AbstractStoreFieldManager
             }
             else if (mmd.hasMap())
             {
-                AbstractClassMetaData keyCmd = mmd.getMap().getKeyClassMetaData(clr, op.getExecutionContext().getMetaDataManager());
-                AbstractClassMetaData valCmd = mmd.getMap().getValueClassMetaData(clr, op.getExecutionContext().getMetaDataManager());
+                AbstractClassMetaData keyCmd = mmd.getMap().getKeyClassMetaData(clr, ec.getMetaDataManager());
+                AbstractClassMetaData valCmd = mmd.getMap().getValueClassMetaData(clr, ec.getMetaDataManager());
 
                 Map idMap = new HashMap();
                 Map map = (Map)value;

@@ -20,23 +20,30 @@ package org.datanucleus.store.json;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ExecutionContext;
 import org.datanucleus.PersistenceNucleusContext;
+import org.datanucleus.metadata.ClassMetaData;
+import org.datanucleus.metadata.ClassPersistenceModifier;
 import org.datanucleus.store.AbstractStoreManager;
 import org.datanucleus.store.NucleusConnection;
+import org.datanucleus.store.StoreData;
 import org.datanucleus.store.StoreManager;
+import org.datanucleus.store.schema.table.CompleteClassTable;
 
+/**
+ * Store Manager for JSON datastores.
+ */
 public class JsonStoreManager extends AbstractStoreManager
 {
     public JsonStoreManager(ClassLoaderResolver clr, PersistenceNucleusContext ctx, Map<String, Object> props)
     {
         super("json", clr, ctx, props);
 
-        // Handler for persistence process
         persistenceHandler = new JsonPersistenceHandler(this);
         connectionMgr.disableConnectionPool();
 
@@ -60,5 +67,43 @@ public class JsonStoreManager extends AbstractStoreManager
         set.add(StoreManager.OPTION_TXN_ISOLATION_READ_COMMITTED);
         set.add(StoreManager.OPTION_ORM);
         return set;
+    }
+
+    public void manageClasses(ClassLoaderResolver clr, String... classNames)
+    {
+        if (classNames == null)
+        {
+            return;
+        }
+
+        // Filter out any "simple" type classes
+        String[] filteredClassNames = getNucleusContext().getTypeManager().filterOutSupportedSecondClassNames(classNames);
+
+        // Find the ClassMetaData for these classes and all referenced by these classes
+        Iterator iter = getMetaDataManager().getReferencedClasses(filteredClassNames, clr).iterator();
+        while (iter.hasNext())
+        {
+            ClassMetaData cmd = (ClassMetaData)iter.next();
+            if (cmd.getPersistenceModifier() == ClassPersistenceModifier.PERSISTENCE_CAPABLE && !cmd.isEmbeddedOnly())
+            {
+                if (cmd.isAbstract())
+                {
+                    continue;
+                }
+
+                if (!storeDataMgr.managesClass(cmd.getFullClassName()))
+                {
+                    // Make sure we have the appropriate "Table" object registered
+                    StoreData sd = storeDataMgr.get(cmd.getFullClassName());
+                    if (sd == null)
+                    {
+                        CompleteClassTable table = new CompleteClassTable(this, cmd, new SchemaVerifierImpl(this, cmd, clr));
+                        sd = newStoreData(cmd, clr);
+                        sd.addProperty("tableObject", table);
+                        registerStoreData(sd);
+                    }
+                }
+            }
+        }
     }
 }

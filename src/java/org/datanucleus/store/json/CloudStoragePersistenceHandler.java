@@ -53,7 +53,7 @@ import org.datanucleus.store.connection.ManagedConnection;
 import org.datanucleus.store.fieldmanager.FieldManager;
 import org.datanucleus.store.json.fieldmanager.FetchFieldManager;
 import org.datanucleus.store.json.fieldmanager.StoreFieldManager;
-import org.datanucleus.store.schema.naming.ColumnType;
+import org.datanucleus.store.schema.table.Table;
 import org.datanucleus.util.NucleusLogger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -69,11 +69,19 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
     {
         super(storeMgr);
     }
-    
+
     public void insertObject(ObjectProvider op)
     {
         // Check if read-only so update not permitted
         assertReadOnlyForUpdateOfObject(op);
+
+        AbstractClassMetaData cmd = op.getClassMetaData();
+        if (!storeMgr.managesClass(cmd.getFullClassName()))
+        {
+            // Make sure schema exists, using this connection
+            storeMgr.manageClasses(op.getExecutionContext().getClassLoaderResolver(), new String[] {cmd.getFullClassName()});
+        }
+        Table table = (Table) storeMgr.getStoreDataForClass(cmd.getFullClassName()).getProperty("tableObject");
 
         Map<String,String> options = new HashMap<String,String>();
         options.put(ConnectionFactoryImpl.STORE_JSON_URL, "/");
@@ -87,7 +95,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
         conn = (URLConnection) mconn.getConnection();
 
         JSONObject jsonobj = new JSONObject();
-        op.provideFields(op.getClassMetaData().getAllMemberPositions(), new StoreFieldManager(op, jsonobj, true));
+        op.provideFields(op.getClassMetaData().getAllMemberPositions(), new StoreFieldManager(op, jsonobj, true, table));
         write("PUT", conn.getURL().getPath(), conn, jsonobj, getHeaders("PUT",options));
     }
 
@@ -240,6 +248,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
             URLConnection conn = (URLConnection) mconn.getConnection();
             ClassLoaderResolver clr = ec.getClassLoaderResolver();
             final AbstractClassMetaData cmd = ec.getMetaDataManager().getMetaDataForClass(candidateClass, clr);
+            Table table = (Table) storeMgr.getStoreDataForClass(cmd.getFullClassName()).getProperty("tableObject");
 
             JSONArray jsonarray;
             try
@@ -346,10 +355,10 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                 final JSONObject json = jsonarray.getJSONObject(i);
 
                 Object id = null;
-                final FieldManager fm = new FetchFieldManager(ec, cmd, json);
+                final FieldManager fm = new FetchFieldManager(ec, cmd, json, table);
                 if (cmd.getIdentityType() == IdentityType.DATASTORE)
                 {
-                    String memberName = storeMgr.getNamingFactory().getColumnName(cmd, ColumnType.DATASTOREID_COLUMN);
+                    String memberName = table.getDatastoreIdColumn().getIdentifier();
                     Object key = json.get(memberName);
                     if (key instanceof String)
                     {
@@ -371,15 +380,13 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                     {
                         return null;
                     }
-                    
-                    public void fetchNonLoadedFields(ObjectProvider sm)
+                    public void fetchNonLoadedFields(ObjectProvider op)
                     {
-                        sm.replaceNonLoadedFields(cmd.getPKMemberPositions(), fm);
+                        op.replaceNonLoadedFields(cmd.getPKMemberPositions(), fm);
                     }
-                    
-                    public void fetchFields(ObjectProvider sm)
+                    public void fetchFields(ObjectProvider op)
                     {
-                        sm.replaceFields(cmd.getPKMemberPositions(), fm);
+                        op.replaceFields(cmd.getPKMemberPositions(), fm);
                     }
                 }, null, ignoreCache, false));
             }

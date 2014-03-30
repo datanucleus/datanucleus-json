@@ -35,13 +35,13 @@ import org.datanucleus.exceptions.NucleusException;
 import org.datanucleus.identity.IdentityUtils;
 import org.datanucleus.metadata.AbstractClassMetaData;
 import org.datanucleus.metadata.AbstractMemberMetaData;
-import org.datanucleus.metadata.ColumnMetaData;
 import org.datanucleus.metadata.MetaDataUtils;
 import org.datanucleus.metadata.RelationType;
 import org.datanucleus.state.ObjectProvider;
 import org.datanucleus.store.StoreManager;
 import org.datanucleus.store.fieldmanager.AbstractFetchFieldManager;
-import org.datanucleus.store.schema.naming.ColumnType;
+import org.datanucleus.store.schema.table.MemberColumnMapping;
+import org.datanucleus.store.schema.table.Table;
 import org.datanucleus.store.types.SCOUtils;
 import org.datanucleus.store.types.converters.TypeConverter;
 import org.datanucleus.store.types.converters.TypeConverterHelper;
@@ -56,27 +56,34 @@ import org.json.JSONObject;
  */
 public class FetchFieldManager extends AbstractFetchFieldManager
 {
+    protected final Table table;
     protected final JSONObject result;
-    protected StoreManager storeMgr;
+    protected final StoreManager storeMgr;
 
-    public FetchFieldManager(ExecutionContext ec, AbstractClassMetaData cmd, JSONObject result)
+    public FetchFieldManager(ExecutionContext ec, AbstractClassMetaData cmd, JSONObject result, Table table)
     {
         super(ec, cmd);
         this.result = result;
         this.storeMgr = ec.getStoreManager();
+        this.table = table;
     }
 
-    public FetchFieldManager(ObjectProvider op, JSONObject result)
+    public FetchFieldManager(ObjectProvider op, JSONObject result, Table table)
     {
         super(op);
         this.result = result;
         this.storeMgr = ec.getStoreManager();
+        this.table = table;
+    }
+
+    protected MemberColumnMapping getColumnMapping(int fieldNumber)
+    {
+        return table.getMemberColumnMappingForMember(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber));
     }
 
     public boolean fetchBooleanField(int fieldNumber)
     {
-        String memberName =
-            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
         if (result.isNull(memberName))
         {
             return false;
@@ -94,8 +101,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
     public byte fetchByteField(int fieldNumber)
     {
-        String memberName =
-            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
         if (result.isNull(memberName))
         {
             return 0;
@@ -114,8 +120,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
     public char fetchCharField(int fieldNumber)
     {
-        String memberName =
-            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
         if (result.isNull(memberName))
         {
             return 0;
@@ -133,8 +138,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
     public double fetchDoubleField(int fieldNumber)
     {
-        String memberName =
-            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
         if (result.isNull(memberName))
         {
             return 0;
@@ -152,8 +156,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
     public float fetchFloatField(int fieldNumber)
     {
-        String memberName =
-            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
         if (result.isNull(memberName))
         {
             return 0;
@@ -171,8 +174,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
     public int fetchIntField(int fieldNumber)
     {
-        String memberName =
-            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
         if (result.isNull(memberName))
         {
             return 0;
@@ -190,8 +192,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
     
     public long fetchLongField(int fieldNumber)
     {
-        String memberName =
-            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
         if (result.isNull(memberName))
         {
             return 0;
@@ -209,8 +210,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
     public short fetchShortField(int fieldNumber)
     {
-        String memberName =
-            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
         if (result.isNull(memberName))
         {
             return 0;
@@ -228,8 +228,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
     public String fetchStringField(int fieldNumber)
     {
-        String memberName =
-            storeMgr.getNamingFactory().getColumnName(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber), ColumnType.COLUMN);
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
         if (result.isNull(memberName))
         {
             return null;
@@ -247,15 +246,14 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
     public Object fetchObjectField(int fieldNumber)
     {
-        AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber);
-        String memberName =
-            storeMgr.getNamingFactory().getColumnName(mmd, ColumnType.COLUMN);
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
         if (result.isNull(memberName))
         {
             return null;
         }
 
         // Special cases
+        AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber);
         ClassLoaderResolver clr = ec.getClassLoaderResolver();
         RelationType relationType = mmd.getRelationType(clr);
         if (RelationType.isRelationSingleValued(relationType) && mmd.isEmbedded())
@@ -277,9 +275,11 @@ public class FetchFieldManager extends AbstractFetchFieldManager
     protected Object fetchObjectFieldInternal(AbstractMemberMetaData mmd, String memberName, ClassLoaderResolver clr)
     throws JSONException
     {
+        MemberColumnMapping mapping = getColumnMapping(mmd.getAbsoluteFieldNumber());
         RelationType relationType = mmd.getRelationType(clr);
         if (relationType == RelationType.NONE)
         {
+            // TODO Use mapping type Converter
             Object returnValue = null;
             if (mmd.getTypeConverterName() != null)
             {
@@ -333,9 +333,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             }
             else if (Enum.class.isAssignableFrom(mmd.getType()))
             {
-                ColumnMetaData[] colmds = mmd.getColumnMetaData();
-                boolean useNumeric = MetaDataUtils.persistColumnAsNumeric(colmds != null ? colmds[0] : null);
-                if (useNumeric)
+                if (MetaDataUtils.isJdbcTypeNumeric(mapping.getColumn(0).getJdbcType()))
                 {
                     return mmd.getType().getEnumConstants()[result.getInt(memberName)];
                 }
@@ -493,12 +491,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             else
             {
                 // Fallback to built-in type converters
-                boolean useLong = false;
-                ColumnMetaData[] colmds = mmd.getColumnMetaData();
-                if (colmds != null && colmds.length == 1 && MetaDataUtils.isJdbcTypeNumeric(colmds[0].getJdbcType()))
-                {
-                    useLong = true;
-                }
+                boolean useLong = MetaDataUtils.isJdbcTypeNumeric(mapping.getColumn(0).getJdbcType());
                 TypeConverter strConv = ec.getNucleusContext().getTypeManager().getTypeConverterForType(mmd.getType(), String.class);
                 TypeConverter longConv = ec.getNucleusContext().getTypeManager().getTypeConverterForType(mmd.getType(), Long.class);
 
