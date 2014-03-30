@@ -57,21 +57,21 @@ import org.json.JSONObject;
 public class FetchFieldManager extends AbstractFetchFieldManager
 {
     protected final Table table;
-    protected final JSONObject result;
+    protected final JSONObject jsonobj;
     protected final StoreManager storeMgr;
 
-    public FetchFieldManager(ExecutionContext ec, AbstractClassMetaData cmd, JSONObject result, Table table)
+    public FetchFieldManager(ExecutionContext ec, AbstractClassMetaData cmd, JSONObject jsonobj, Table table)
     {
         super(ec, cmd);
-        this.result = result;
+        this.jsonobj = jsonobj;
         this.storeMgr = ec.getStoreManager();
         this.table = table;
     }
 
-    public FetchFieldManager(ObjectProvider op, JSONObject result, Table table)
+    public FetchFieldManager(ObjectProvider op, JSONObject jsonobj, Table table)
     {
         super(op);
-        this.result = result;
+        this.jsonobj = jsonobj;
         this.storeMgr = ec.getStoreManager();
         this.table = table;
     }
@@ -84,13 +84,13 @@ public class FetchFieldManager extends AbstractFetchFieldManager
     public boolean fetchBooleanField(int fieldNumber)
     {
         String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
-        if (result.isNull(memberName))
+        if (jsonobj.isNull(memberName))
         {
             return false;
         }
         try
         {
-            return result.getBoolean(memberName);
+            return jsonobj.getBoolean(memberName);
         }
         catch (JSONException e)
         {
@@ -102,13 +102,13 @@ public class FetchFieldManager extends AbstractFetchFieldManager
     public byte fetchByteField(int fieldNumber)
     {
         String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
-        if (result.isNull(memberName))
+        if (jsonobj.isNull(memberName))
         {
             return 0;
         }
         try
         {
-            String str = result.getString(memberName);
+            String str = jsonobj.getString(memberName);
             return Byte.valueOf(str).byteValue();
         }
         catch (JSONException e)
@@ -121,13 +121,13 @@ public class FetchFieldManager extends AbstractFetchFieldManager
     public char fetchCharField(int fieldNumber)
     {
         String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
-        if (result.isNull(memberName))
+        if (jsonobj.isNull(memberName))
         {
             return 0;
         }
         try
         {
-            return result.getString(memberName).charAt(0);
+            return jsonobj.getString(memberName).charAt(0);
         }
         catch (JSONException e)
         {
@@ -139,13 +139,13 @@ public class FetchFieldManager extends AbstractFetchFieldManager
     public double fetchDoubleField(int fieldNumber)
     {
         String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
-        if (result.isNull(memberName))
+        if (jsonobj.isNull(memberName))
         {
             return 0;
         }
         try
         {
-            return result.getDouble(memberName);
+            return jsonobj.getDouble(memberName);
         }
         catch (JSONException e)
         {
@@ -157,13 +157,13 @@ public class FetchFieldManager extends AbstractFetchFieldManager
     public float fetchFloatField(int fieldNumber)
     {
         String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
-        if (result.isNull(memberName))
+        if (jsonobj.isNull(memberName))
         {
             return 0;
         }
         try
         {
-            return (float) result.getDouble(memberName);
+            return (float) jsonobj.getDouble(memberName);
         }
         catch (JSONException e)
         {
@@ -175,13 +175,13 @@ public class FetchFieldManager extends AbstractFetchFieldManager
     public int fetchIntField(int fieldNumber)
     {
         String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
-        if (result.isNull(memberName))
+        if (jsonobj.isNull(memberName))
         {
             return 0;
         }
         try
         {
-            return result.getInt(memberName);
+            return jsonobj.getInt(memberName);
         }
         catch (JSONException e)
         {
@@ -193,13 +193,13 @@ public class FetchFieldManager extends AbstractFetchFieldManager
     public long fetchLongField(int fieldNumber)
     {
         String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
-        if (result.isNull(memberName))
+        if (jsonobj.isNull(memberName))
         {
             return 0;
         }
         try
         {
-            return result.getLong(memberName);
+            return jsonobj.getLong(memberName);
         }
         catch (JSONException e)
         {
@@ -211,13 +211,13 @@ public class FetchFieldManager extends AbstractFetchFieldManager
     public short fetchShortField(int fieldNumber)
     {
         String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
-        if (result.isNull(memberName))
+        if (jsonobj.isNull(memberName))
         {
             return 0;
         }
         try
         {
-            return (short) result.getInt(memberName);
+            return (short) jsonobj.getInt(memberName);
         }
         catch (JSONException e)
         {
@@ -229,13 +229,13 @@ public class FetchFieldManager extends AbstractFetchFieldManager
     public String fetchStringField(int fieldNumber)
     {
         String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
-        if (result.isNull(memberName))
+        if (jsonobj.isNull(memberName))
         {
             return null;
         }
         try
         {
-            return result.getString(memberName);
+            return jsonobj.getString(memberName);
         }
         catch (JSONException e)
         {
@@ -247,7 +247,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
     public Object fetchObjectField(int fieldNumber)
     {
         String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
-        if (result.isNull(memberName))
+        if (jsonobj.isNull(memberName))
         {
             return null;
         }
@@ -264,7 +264,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
         try
         {
-            return fetchObjectFieldInternal(mmd, memberName, clr);
+            return fetchObjectFieldInternal(fieldNumber, mmd, clr, relationType);
         }
         catch (JSONException e)
         {
@@ -272,11 +272,11 @@ public class FetchFieldManager extends AbstractFetchFieldManager
         }
     }
 
-    protected Object fetchObjectFieldInternal(AbstractMemberMetaData mmd, String memberName, ClassLoaderResolver clr)
+    protected Object fetchObjectFieldInternal(int fieldNumber, AbstractMemberMetaData mmd, ClassLoaderResolver clr, RelationType relationType)
     throws JSONException
     {
-        MemberColumnMapping mapping = getColumnMapping(mmd.getAbsoluteFieldNumber());
-        RelationType relationType = mmd.getRelationType(clr);
+        MemberColumnMapping mapping = getColumnMapping(fieldNumber);
+        String memberName = mapping.getColumn(0).getIdentifier();
         if (relationType == RelationType.NONE)
         {
             Object returnValue = null;
@@ -298,27 +298,27 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     Class datastoreType = TypeConverterHelper.getDatastoreTypeForTypeConverter(conv, mmd.getType());
                     if (datastoreType == String.class)
                     {
-                        returnValue = conv.toMemberType(result.getString(memberName));
+                        returnValue = conv.toMemberType(jsonobj.getString(memberName));
                     }
                     else if (datastoreType == Boolean.class)
                     {
-                        returnValue = conv.toMemberType(result.getBoolean(memberName));
+                        returnValue = conv.toMemberType(jsonobj.getBoolean(memberName));
                     }
                     else if (datastoreType == Double.class)
                     {
-                        returnValue = conv.toMemberType(result.getDouble(memberName));
+                        returnValue = conv.toMemberType(jsonobj.getDouble(memberName));
                     }
                     else if (datastoreType == Float.class)
                     {
-                        returnValue = conv.toMemberType(result.getDouble(memberName));
+                        returnValue = conv.toMemberType(jsonobj.getDouble(memberName));
                     }
                     else if (datastoreType == Integer.class)
                     {
-                        returnValue = conv.toMemberType(result.getInt(memberName));
+                        returnValue = conv.toMemberType(jsonobj.getInt(memberName));
                     }
                     else if (datastoreType == Long.class)
                     {
-                        returnValue = conv.toMemberType(result.getLong(memberName));
+                        returnValue = conv.toMemberType(jsonobj.getLong(memberName));
                     }
                     if (op != null)
                     {
@@ -329,34 +329,34 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             }
             else if (Boolean.class.isAssignableFrom(mmd.getType()))
             {
-                return result.getBoolean(memberName);
+                return jsonobj.getBoolean(memberName);
             }
             else if (Integer.class.isAssignableFrom(mmd.getType()))
             {
-                return result.getInt(memberName);
+                return jsonobj.getInt(memberName);
             }
             else if (Long.class.isAssignableFrom(mmd.getType()))
             {
-                return result.getLong(memberName);
+                return jsonobj.getLong(memberName);
             }
             else if (Double.class.isAssignableFrom(mmd.getType()))
             {
-                return result.getDouble(memberName);
+                return jsonobj.getDouble(memberName);
             }
             else if (Enum.class.isAssignableFrom(mmd.getType()))
             {
                 if (MetaDataUtils.isJdbcTypeNumeric(mapping.getColumn(0).getJdbcType()))
                 {
-                    return mmd.getType().getEnumConstants()[result.getInt(memberName)];
+                    return mmd.getType().getEnumConstants()[jsonobj.getInt(memberName)];
                 }
                 else
                 {
-                    return Enum.valueOf(mmd.getType(), (String)result.get(memberName));
+                    return Enum.valueOf(mmd.getType(), (String)jsonobj.get(memberName));
                 }
             }
             else if (BigDecimal.class.isAssignableFrom(mmd.getType()) || BigInteger.class.isAssignableFrom(mmd.getType()))
             {
-                return TypeConversionHelper.convertTo(result.get(memberName), mmd.getType());
+                return TypeConversionHelper.convertTo(jsonobj.get(memberName), mmd.getType());
             }
             else if (Collection.class.isAssignableFrom(mmd.getType()))
             {
@@ -372,7 +372,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     throw new NucleusDataStoreException(e.getMessage(), e);
                 }
 
-                JSONArray array = result.getJSONArray(memberName);
+                JSONArray array = jsonobj.getJSONArray(memberName);
                 Class elementCls = null;
                 if (mmd.getCollection() != null && mmd.getCollection().getElementType() != null)
                 {
@@ -426,7 +426,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     throw new NucleusDataStoreException(e.getMessage(), e);
                 }
 
-                JSONObject mapValue = result.getJSONObject(memberName);
+                JSONObject mapValue = jsonobj.getJSONObject(memberName);
                 Iterator keyIter = mapValue.keys();
                 Class keyCls = null;
                 if (mmd.getMap() != null && mmd.getMap().getKeyType() != null)
@@ -475,7 +475,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             else if (mmd.getType().isArray())
             {
                 // Non-PC[]
-                JSONArray arrayJson = result.getJSONArray(memberName);
+                JSONArray arrayJson = jsonobj.getJSONArray(memberName);
                 Object array = Array.newInstance(mmd.getType().getComponentType(), arrayJson.length());
                 for (int i=0; i<arrayJson.length(); i++)
                 {
@@ -509,19 +509,19 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
                 if (useLong && longConv != null)
                 {
-                    returnValue = longConv.toMemberType(result.getLong(memberName));
+                    returnValue = longConv.toMemberType(jsonobj.getLong(memberName));
                 }
                 else if (!useLong && strConv != null)
                 {
-                    returnValue = strConv.toMemberType((String)result.get(memberName));
+                    returnValue = strConv.toMemberType((String)jsonobj.get(memberName));
                 }
                 else if (!useLong && longConv != null)
                 {
-                    returnValue = longConv.toMemberType(result.getLong(memberName));
+                    returnValue = longConv.toMemberType(jsonobj.getLong(memberName));
                 }
                 else
                 {
-                    Object value = result.get(memberName);
+                    Object value = jsonobj.get(memberName);
                     if (value instanceof JSONObject)
                     {
                         Class cls = clr.classForName(((JSONObject)value).getString("class"), true);
@@ -529,7 +529,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     }
                     else
                     {
-                        returnValue = TypeConversionHelper.convertTo(result.get(memberName), mmd.getType());
+                        returnValue = TypeConversionHelper.convertTo(jsonobj.get(memberName), mmd.getType());
                     }
                 }
 
@@ -543,7 +543,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
         else if (RelationType.isRelationSingleValued(relationType))
         {
             // Persistable object - retrieve the string form of the identity, and find the object
-            String idStr = (String)result.get(memberName);
+            String idStr = (String)jsonobj.get(memberName);
             if (idStr == null)
             {
                 return null;
@@ -568,7 +568,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             if (mmd.hasCollection())
             {
                 // Collection<PC>
-                JSONArray array = (JSONArray)result.get(memberName);
+                JSONArray array = (JSONArray)jsonobj.get(memberName);
                 Collection<Object> coll;
                 try
                 {
@@ -608,7 +608,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             else if (mmd.hasArray())
             {
                 // PC[]
-                JSONArray array = (JSONArray)result.get(memberName);
+                JSONArray array = (JSONArray)jsonobj.get(memberName);
                 Object arrayField = Array.newInstance(mmd.getType().getComponentType(), array.length());
 
                 AbstractClassMetaData elementCmd = mmd.getCollection().getElementClassMetaData(
@@ -639,7 +639,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             else if (mmd.hasMap())
             {
                 // Map<Non-PC, PC>, Map<PC, PC>, Map<PC, Non-PC>
-                JSONObject mapVal = (JSONObject)result.get(memberName);
+                JSONObject mapVal = (JSONObject)jsonobj.get(memberName);
                 Map map;
                 try
                 {

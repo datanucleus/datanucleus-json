@@ -24,11 +24,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ExecutionContext;
 import org.datanucleus.exceptions.NucleusException;
+import org.datanucleus.exceptions.NucleusUserException;
 import org.datanucleus.identity.IdentityUtils;
 import org.datanucleus.metadata.AbstractClassMetaData;
 import org.datanucleus.metadata.AbstractMemberMetaData;
@@ -39,6 +41,7 @@ import org.datanucleus.store.fieldmanager.AbstractStoreFieldManager;
 import org.datanucleus.store.schema.table.MemberColumnMapping;
 import org.datanucleus.store.schema.table.Table;
 import org.datanucleus.store.types.converters.TypeConverter;
+import org.datanucleus.util.ClassUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -49,6 +52,13 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 {
     protected Table table;
     protected JSONObject jsonobj;
+
+    public StoreFieldManager(ExecutionContext ec, AbstractClassMetaData cmd, JSONObject jsonobj, boolean insert, Table table)
+    {
+        super(ec, cmd, insert);
+        this.jsonobj = jsonobj;
+        this.table = table;
+    }
 
     public StoreFieldManager(ObjectProvider op, JSONObject jsonobj, boolean insert, Table table)
     {
@@ -242,15 +252,56 @@ public class StoreFieldManager extends AbstractStoreFieldManager
         ExecutionContext ec = op.getExecutionContext();
         ClassLoaderResolver clr = ec.getClassLoaderResolver();
         RelationType relationType = mmd.getRelationType(clr);
-        if (RelationType.isRelationSingleValued(relationType) && mmd.isEmbedded())
+
+        if (relationType != RelationType.NONE && MetaDataUtils.getInstance().isMemberEmbedded(ec.getMetaDataManager(), clr, mmd, relationType, null))
         {
-            // Persistable object embedded into this table TODO Support this
-            throw new NucleusException("Embedded fields are not supported");
+            // Embedded field
+            if (RelationType.isRelationSingleValued(relationType))
+            {
+                AbstractClassMetaData embCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
+                int[] embMmdPosns = embCmd.getAllMemberPositions();
+                List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>();
+                embMmds.add(mmd);
+                if (value == null)
+                {
+                    // Store null in all columns for the embedded (and nested embedded) object(s)
+                    StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(ec, embCmd, jsonobj, insert, embMmds, table);
+                    for (int i=0;i<embMmdPosns.length;i++)
+                    {
+                        AbstractMemberMetaData embMmd = embCmd.getMetaDataForManagedMemberAtAbsolutePosition(embMmdPosns[i]);
+                        if (String.class.isAssignableFrom(embMmd.getType()) || embMmd.getType().isPrimitive() || ClassUtils.isPrimitiveWrapperType(mmd.getTypeName()))
+                        {
+                            // Store a null for any primitive/wrapper/String fields
+                            List<AbstractMemberMetaData> colEmbMmds = new ArrayList<AbstractMemberMetaData>(embMmds);
+                            colEmbMmds.add(embMmd);
+                            MemberColumnMapping mapping = table.getMemberColumnMappingForEmbeddedMember(colEmbMmds);
+                            for (int j=0;j<mapping.getNumberOfColumns();j++)
+                            {
+                                // TODO Put null in this column
+                            }
+                        }
+                        else if (Object.class.isAssignableFrom(embMmd.getType()))
+                        {
+                            storeEmbFM.storeObjectField(embMmdPosns[i], null);
+                        }
+                    }
+                    return;
+                }
+
+                ObjectProvider embOP = ec.findObjectProviderForEmbedded(value, op, mmd);
+                StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(embOP, jsonobj, insert, embMmds, table);
+                embOP.provideFields(embMmdPosns, storeEmbFM);
+                return;
+            }
+            else if (RelationType.isRelationMultiValued(relationType))
+            {
+                throw new NucleusUserException("Dont support embedded multi-valued field at " + mmd.getFullFieldName() + " with Excel");
+            }
         }
 
         try
         {
-            storeObjectFieldInternal(fieldNumber, value, mmd, clr);
+            storeObjectFieldInternal(fieldNumber, value, mmd, clr, relationType);
         }
         catch (JSONException e)
         {
@@ -258,11 +309,10 @@ public class StoreFieldManager extends AbstractStoreFieldManager
         }
     }
 
-    protected void storeObjectFieldInternal(int fieldNumber, Object value, AbstractMemberMetaData mmd, ClassLoaderResolver clr)
+    protected void storeObjectFieldInternal(int fieldNumber, Object value, AbstractMemberMetaData mmd, ClassLoaderResolver clr, RelationType relationType)
     throws JSONException
     {
         MemberColumnMapping mapping = getColumnMapping(fieldNumber);
-        RelationType relationType = mmd.getRelationType(clr);
         String name = mapping.getColumn(0).getIdentifier();
 
         if (value == null)
