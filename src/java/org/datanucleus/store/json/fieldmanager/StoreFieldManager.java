@@ -259,6 +259,8 @@ public class StoreFieldManager extends AbstractStoreFieldManager
             // Embedded field
             if (RelationType.isRelationSingleValued(relationType))
             {
+                // Persist as flat embedded
+                // TODO Support nested embedding in JSON object
                 AbstractClassMetaData embCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
                 int[] embMmdPosns = embCmd.getAllMemberPositions();
                 List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>();
@@ -296,6 +298,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
             }
             else if (RelationType.isRelationMultiValued(relationType))
             {
+                // TODO Support nested embedding in JSON object
                 throw new NucleusUserException("Dont support embedded multi-valued field at " + mmd.getFullFieldName() + " with Excel");
             }
         }

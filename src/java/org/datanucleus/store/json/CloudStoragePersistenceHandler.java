@@ -122,9 +122,8 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
             http.setReadTimeout(10000);
             http.setConnectTimeout(10000);
             http.connect();
-            int code = http.getResponseCode();
-            
 
+            int code = http.getResponseCode();
             if (code == 409)
             {
                 // HTTP Error code: 409 Conflict error: <?xml version='1.0' encoding='UTF-8'?><Error><Code>BucketAlreadyOwnedByYou</Code><Message>Your previous request to create the named bucket succeeded and you already own it.</Message></Error>
@@ -144,7 +143,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                 http.getErrorStream().close();
                 throw new NucleusDataStoreException("HTTP Error code: "+code+" "+http.getResponseMessage()+" error: "+sb.toString());
             }
-            else if(code>=300)
+            else if (code >= 300)
             {
                 throw new NucleusDataStoreException("Redirect not supported. HTTP Error code: "+code+" "+http.getResponseMessage());
             }
@@ -219,7 +218,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
             urlStr = urlStr.substring(urlStr.indexOf(storeMgr.getStoreManagerKey()+":")+storeMgr.getStoreManagerKey().length()+1);
             headers.put("Host", getBucket()+"."+new URL(urlStr).getHost());
             String stringToSign = httpVerb + "\n" + contentMD5 + "\n" + contentType + "\n" + headers.get("Date") + "\n" + "/"+getBucket() +"/";
-            headers.put("Authorization", "AWS "+awsKey+":"+CloudStorageUtils.hmac(awsSecretKey,stringToSign));
+            headers.put("Authorization", "AWS "+awsKey+":"+CloudStorageUtils.hmac(awsSecretKey,stringToSign)); // TODO This is AWS specific, no?
         }
         catch (MalformedURLException e)
         {
@@ -273,6 +272,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                     return Collections.EMPTY_LIST;
                 }
                 handleHTTPErrorCode(http);
+
                 StringBuffer sb = new StringBuffer();
                 if (http.getContentLength() > 0)
                 {
@@ -293,9 +293,10 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                     sb.append(new String(baos.toByteArray()));
                 }
                 http.getInputStream().close();
+
                 String contentType = http.getHeaderField("content-type");
                 //content-type = application/xml; charset=UTF-8  (charset is optional)
-                if (contentType!=null && 
+                if (contentType != null && 
                     (contentType.split(";")[0].equalsIgnoreCase("application/xml") || contentType.split(";")[0].equalsIgnoreCase("text/xml")) )
                 {
                     Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new ByteArrayInputStream(sb.toString().getBytes()));

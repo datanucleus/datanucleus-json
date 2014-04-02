@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ExecutionContext;
 import org.datanucleus.metadata.AbstractClassMetaData;
 import org.datanucleus.query.evaluator.JDOQLEvaluator;
@@ -76,8 +75,7 @@ public class JDOQLQuery extends AbstractJDOQLQuery
 
     protected Object performExecute(Map parameters)
     {
-        ClassLoaderResolver clr = ec.getClassLoaderResolver();
-        final AbstractClassMetaData cmd = ec.getMetaDataManager().getMetaDataForClass(candidateClass, clr);
+        AbstractClassMetaData cmd = ec.getMetaDataManager().getMetaDataForClass(candidateClass, ec.getClassLoaderResolver());
         Properties options = new Properties();
         options.put(ConnectionFactoryImpl.STORE_JSON_URL, ((JsonPersistenceHandler)getStoreManager().getPersistenceHandler()).getURLPathForQuery(cmd));
         ManagedConnection mconn = getStoreManager().getConnection(ec,options);
@@ -88,6 +86,7 @@ public class JDOQLQuery extends AbstractJDOQLQuery
             {
                 NucleusLogger.QUERY.debug(LOCALISER.msg("021046", "JDOQL", getSingleStringQuery(), null));
             }
+
             List candidates = null;
             if (candidateCollection == null)
             {
@@ -105,8 +104,7 @@ public class JDOQLQuery extends AbstractJDOQLQuery
 
             if (NucleusLogger.QUERY.isDebugEnabled())
             {
-                NucleusLogger.QUERY.debug(LOCALISER.msg("021074", "JDOQL", 
-                    "" + (System.currentTimeMillis() - startTime)));
+                NucleusLogger.QUERY.debug(LOCALISER.msg("021074", "JDOQL", "" + (System.currentTimeMillis() - startTime)));
             }
 
             return results;

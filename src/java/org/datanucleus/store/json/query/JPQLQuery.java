@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ExecutionContext;
 import org.datanucleus.exceptions.NucleusException;
 import org.datanucleus.metadata.AbstractClassMetaData;
@@ -75,11 +74,10 @@ public class JPQLQuery extends AbstractJPQLQuery
 
     protected Object performExecute(Map parameters)
     {
-        ClassLoaderResolver clr = ec.getClassLoaderResolver();
-        final AbstractClassMetaData cmd = ec.getMetaDataManager().getMetaDataForClass(candidateClass, clr);
+        AbstractClassMetaData cmd = ec.getMetaDataManager().getMetaDataForClass(candidateClass, ec.getClassLoaderResolver());
         Properties options = new Properties();
         options.put(ConnectionFactoryImpl.STORE_JSON_URL, ((JsonPersistenceHandler)getStoreManager().getPersistenceHandler()).getURLPathForQuery(cmd));
-        ManagedConnection mconn = getStoreManager().getConnection(ec,options);
+        ManagedConnection mconn = getStoreManager().getConnection(ec, options);
         try
         {
             long startTime = System.currentTimeMillis();
@@ -87,6 +85,7 @@ public class JPQLQuery extends AbstractJPQLQuery
             {
                 NucleusLogger.QUERY.debug(LOCALISER.msg("021046", "JPQL", getSingleStringQuery(), null));
             }
+
             List candidates = null;
             if (candidateCollection == null)
             {
@@ -105,8 +104,7 @@ public class JPQLQuery extends AbstractJPQLQuery
 
             if (NucleusLogger.QUERY.isDebugEnabled())
             {
-                NucleusLogger.QUERY.debug(LOCALISER.msg("021074", "JPQL", 
-                    "" + (System.currentTimeMillis() - startTime)));
+                NucleusLogger.QUERY.debug(LOCALISER.msg("021074", "JPQL", "" + (System.currentTimeMillis() - startTime)));
             }
 
             if (type == BULK_DELETE)
