@@ -564,8 +564,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         }
     }
 
-    protected void write(String method, String requestUri, URLConnection conn, JSONObject jsonobj,
-            Map<String, String> headers)
+    protected void write(String method, String requestUri, URLConnection conn, JSONObject jsonobj, Map<String, String> headers)
     {
         try
         {
@@ -681,7 +680,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
      * @param candidateClass Candidate
      * @param subclasses Whether to include subclasses
      * @param ignoreCache Whether to ignore the cache
-     * @param options a Map of options
+     * @param options Map of options
      * @return List of objects of the candidate type
      */
     public List getObjectsOfCandidateType(final ExecutionContext ec, ManagedConnection mconn, 
@@ -844,7 +843,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         return results;
     }
 
-    public String getURLPath(ObjectProvider op)
+    protected String getURLPath(ObjectProvider op)
     {
         AbstractClassMetaData cmd = op.getClassMetaData();
         Table table = (Table) storeMgr.getStoreDataForClass(cmd.getFullClassName()).getProperty("tableObject");
@@ -876,7 +875,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         return url;
     }
 
-    public String getURLPath(AbstractClassMetaData acmd)
+    protected String getURLPath(AbstractClassMetaData acmd)
     {
         String url = acmd.getValueForExtension("url");
         if (url == null)
