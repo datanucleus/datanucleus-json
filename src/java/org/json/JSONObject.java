@@ -75,7 +75,7 @@ import java.util.TreeSet;
  *     <code>{ } [ ] / \ : , = ; #</code> and if they do not look like numbers
  *     and if they are not the reserved words <code>true</code>,
  *     <code>false</code>, or <code>null</code>.</li>
- * <li>Keys can be followed by <code>=</code> or <code>=></code> as well as
+ * <li>Keys can be followed by <code>=</code> or <code>=&gt;</code> as well as
  *     by <code>:</code>.</li>
  * <li>Values can be followed by <code>;</code> <small>(semicolon)</small> as
  *     well as by <code>,</code> <small>(comma)</small>.</li>
@@ -541,7 +541,7 @@ public class JSONObject {
 
     /**
      * Get an array of field names from a JSONObject.
-     *
+     * @param jo a JSONObject
      * @return An array of field names, or null if there are no names.
      */
     public static String[] getNames(JSONObject jo) {
@@ -562,7 +562,7 @@ public class JSONObject {
 
     /**
      * Get an array of field names from an Object.
-     *
+     * @param object an Object
      * @return An array of field names, or null if there are no names.
      */
     public static String[] getNames(Object object) {
@@ -727,7 +727,7 @@ public class JSONObject {
      * @param key   A key string.
      * @param value A Collection value.
      * @return      this.
-     * @throws JSONException
+     * @throws JSONException on putting JSONObject from a Collection
      */
     public JSONObject put(String key, Collection value) throws JSONException {
         put(key, new JSONArray(value));
@@ -953,7 +953,7 @@ public class JSONObject {
      * @param key   A key string.
      * @param value A Map value.
      * @return      this.
-     * @throws JSONException
+     * @throws JSONException on putting JSONObject from Map value
      */
     public JSONObject put(String key, Map value) throws JSONException {
         put(key, new JSONObject(value));
@@ -1006,7 +1006,7 @@ public class JSONObject {
 
     /**
      * Produce a string in double quotes with backslash sequences in all the
-     * right places. A backslash will be inserted within </, allowing JSON
+     * right places. A backslash will be inserted within &lt;/, allowing JSON
      * text to be delivered in HTML. In JSON text, a string cannot contain a
      * control character or an unescaped quote or backslash.
      * @param string A String
@@ -1354,9 +1354,10 @@ public class JSONObject {
       * For compactness, no whitespace is added.
       * <p>
       * Warning: This method assumes that the data structure is acyclical.
-      *
+      * </p>
+      * @param writer a Writer
       * @return The writer.
-      * @throws JSONException
+      * @throws JSONException on JSONObject
       */
      public Writer write(Writer writer) throws JSONException {
         try {

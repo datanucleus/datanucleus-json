@@ -172,6 +172,7 @@ public class JSONArray {
 
     /**
      * Construct a JSONArray from an array
+     * @param array An array
      * @throws JSONException If not an array.
      */
     public JSONArray(Object array) throws JSONException {
@@ -811,7 +812,7 @@ public class JSONArray {
      *  representation of the object, beginning
      *  with <code>[</code>&nbsp;<small>(left bracket)</small> and ending
      *  with <code>]</code>&nbsp;<small>(right bracket)</small>.
-     * @throws JSONException
+     * @throws JSONException on printing JSONArray
      */
     public String toString(int indentFactor) throws JSONException {
         return toString(indentFactor, 0);
@@ -826,7 +827,7 @@ public class JSONArray {
      * @param indent The indention of the top level.
      * @return a printable, displayable, transmittable
      *  representation of the array.
-     * @throws JSONException
+     * @throws JSONException on printing JSONArray
      */
     String toString(int indentFactor, int indent) throws JSONException {
         int len = length();
@@ -866,9 +867,10 @@ public class JSONArray {
      * For compactness, no whitespace is added.
      * <p>
      * Warning: This method assumes that the data structure is acyclical.
-     *
+     * </p>
+     * @param writer a Writer
      * @return The writer.
-     * @throws JSONException
+     * @throws JSONException on writing JSONArray
      */
     public Writer write(Writer writer) throws JSONException {
         try {

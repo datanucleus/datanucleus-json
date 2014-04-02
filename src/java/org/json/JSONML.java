@@ -195,10 +195,10 @@ public class JSONML {
      * properties, then the second element will be JSONObject containing the
      * name/value pairs. If the tag contains children, then strings and
      * JSONArrays will represent the child tags.
-     * Comments, prologs, DTDs, and <code>&lt;[ [ ]]></code> are ignored.
+     * Comments, prologs, DTDs, and <code>&lt;[ [ ]]&gt;</code> are ignored.
      * @param string The source string.
      * @return A JSONArray containing the structured data from the XML string.
-     * @throws JSONException
+     * @throws JSONException on string to JSONArray conversion
      */
     public static JSONArray toJSONArray(String string) throws JSONException {
     	return toJSONArray(new XMLTokener(string));
@@ -212,10 +212,10 @@ public class JSONML {
      * properties, then the second element will be JSONObject containing the
      * name/value pairs. If the tag contains children, then strings and
      * JSONArrays will represent the child content and tags.
-     * Comments, prologs, DTDs, and <code>&lt;[ [ ]]></code> are ignored.
+     * Comments, prologs, DTDs, and <code>&lt;[ [ ]]&gt;</code> are ignored.
      * @param x An XMLTokener.
      * @return A JSONArray containing the structured data from the XML string.
-     * @throws JSONException
+     * @throws JSONException on XMLTokener to JSONArray conversion
      */
     public static JSONArray toJSONArray(XMLTokener x) throws JSONException {
     	return parse(x, null);
@@ -287,7 +287,7 @@ public class JSONML {
      * Reverse the JSONML transformation, making an XML text from a JSONArray.
      * @param ja A JSONArray.
      * @return An XML string.
-     * @throws JSONException
+     * @throws JSONException on JSONArray to String conversion
      */
     public static String toString(JSONArray ja) throws JSONException {
     	StringBuffer b = new StringBuffer();

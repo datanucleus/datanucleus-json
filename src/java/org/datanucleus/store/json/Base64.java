@@ -36,7 +36,7 @@ package org.datanucleus.store.json;
  * A Base64 Encoder/Decoder.
  * <p>
  * This class is used to encode and decode data in Base64 format as described in RFC 1521.
- * <p>
+ * </p>
  */
 public class Base64
 {

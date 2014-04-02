@@ -154,7 +154,7 @@ public class JSONTokener {
     /**
      * Get the next char in the string, skipping whitespace
      * and comments (slashslash, slashstar, and hash).
-     * @throws JSONException
+     * @throws JSONException on skipping whitespace in JSONToken
      * @return  A character, or 0 if there are no more characters.
      */
     public char nextClean() throws JSONException {
@@ -428,6 +428,7 @@ public class JSONTokener {
      * Skip characters until past the requested string.
      * If it is not found, we are left at the end of the source.
      * @param to A string to skip past.
+     * @return true if String to is found
      */
     public boolean skipPast(String to) {
         this.myIndex = this.mySource.indexOf(to, this.myIndex);
