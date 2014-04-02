@@ -70,7 +70,6 @@ public class StoreEmbeddedFieldManager extends StoreFieldManager
             return;
         }
 
-        ExecutionContext ec = op.getExecutionContext();
         ClassLoaderResolver clr = ec.getClassLoaderResolver();
         AbstractMemberMetaData lastMmd = mmds.get(mmds.size()-1);
         EmbeddedMetaData embmd = mmds.get(0).getEmbeddedMetaData();

@@ -124,7 +124,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
         try
         {
-            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), new Character(value));
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), Character.valueOf(value));
         }
         catch (JSONException e)
         {
