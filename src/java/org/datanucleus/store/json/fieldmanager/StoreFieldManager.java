@@ -42,6 +42,7 @@ import org.datanucleus.store.schema.table.MemberColumnMapping;
 import org.datanucleus.store.schema.table.Table;
 import org.datanucleus.store.types.converters.TypeConverter;
 import org.datanucleus.util.ClassUtils;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -332,6 +333,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 {
                     for (int i=0;i<mapping.getNumberOfColumns();i++)
                     {
+                        // TODO Persist as the correct column type since the typeConverter type may not be directly persistable
                         Object colValue = Array.get(datastoreValue, i);
                         jsonobj.put(mapping.getColumn(i).getIdentifier(), colValue);
                     }
