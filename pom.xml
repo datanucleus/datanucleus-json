@@ -34,12 +34,13 @@
             <version>[${dn.core.version}, )</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
+        <!-- In case we swap out org.json internals for javax.json at some point -->
+        <!-- dependency>
             <groupId>javax.json</groupId>
             <artifactId>javax.json-api</artifactId>
             <version>1.0</version>
             <scope>provided</scope>
-        </dependency>
+        </dependency-->
     </dependencies>
 
     <build>
