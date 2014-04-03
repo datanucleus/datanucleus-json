@@ -51,7 +51,7 @@ public class CloudStorageUtils
             Mac mac = Mac.getInstance(HMAC_SHA1_ALGORITHM);
             mac.init(secretKeySpec);
             byte[] rawHmac = mac.doFinal(data.getBytes(UTF8_CHARSET));
-            return new String(Base64.encode(rawHmac));
+            return new String(org.datanucleus.util.Base64.encode(rawHmac));
         }
         catch (UnsupportedEncodingException e)
         {
