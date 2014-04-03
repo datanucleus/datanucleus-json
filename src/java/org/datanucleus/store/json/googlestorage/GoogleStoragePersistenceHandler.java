@@ -1,5 +1,5 @@
 /**********************************************************************
-Copyright (c) 2009 Erik Bengtson and others. All rights reserved.
+Copyright (c) 2010 Erik Bengtson and others. All rights reserved.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -15,19 +15,20 @@ limitations under the License.
 Contributors:
     ...
 **********************************************************************/
-package org.datanucleus.store.json;
+package org.datanucleus.store.json.googlestorage;
 
 import org.datanucleus.store.StoreManager;
+import org.datanucleus.store.json.CloudStoragePersistenceHandler;
 
-public class AmazonS3PersistenceHandler extends CloudStoragePersistenceHandler
+public class GoogleStoragePersistenceHandler extends CloudStoragePersistenceHandler
 {
-    AmazonS3PersistenceHandler(StoreManager storeMgr)
+    GoogleStoragePersistenceHandler(StoreManager storeMgr)
     {
         super(storeMgr);
     }
     
     protected String getRealmName()
     {
-        return "AWS";
+        return "GOOG1";
     }
 }

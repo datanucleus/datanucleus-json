@@ -15,7 +15,7 @@ limitations under the License.
 Contributors:
     ...
 **********************************************************************/
-package org.datanucleus.store.json;
+package org.datanucleus.store.json.googlestorage;
 
 import java.util.Map;
 

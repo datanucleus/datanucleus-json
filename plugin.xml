@@ -3,23 +3,14 @@
 <plugin>
     <extension point="org.datanucleus.store_manager">
         <store-manager class-name="org.datanucleus.store.json.JsonStoreManager" key="json" url-key="json"/>
-        <store-manager class-name="org.datanucleus.store.json.AmazonS3StoreManager" key="amazons3" url-key="amazons3"/>
-        <store-manager class-name="org.datanucleus.store.json.GoogleStorageStoreManager" key="googlestorage" url-key="googlestorage"/>
+        <store-manager class-name="org.datanucleus.store.json.amazons3.AmazonS3StoreManager" key="amazons3" url-key="amazons3"/>
+        <store-manager class-name="org.datanucleus.store.json.googlestorage.GoogleStorageStoreManager" key="googlestorage" url-key="googlestorage"/>
     </extension>
 
     <extension point="org.datanucleus.store_connectionfactory">
-        <connectionfactory name="json/tx" class-name="org.datanucleus.store.json.ConnectionFactoryImpl"
-            datastore="json" transactional="true"/>
-        <connectionfactory name="json/nontx" class-name="org.datanucleus.store.json.ConnectionFactoryImpl"
-            datastore="json" transactional="false"/>
-        <connectionfactory name="amazons3/tx" class-name="org.datanucleus.store.json.ConnectionFactoryImpl"
-            datastore="amazons3" transactional="true"/>
-        <connectionfactory name="amazons3/nontx" class-name="org.datanucleus.store.json.ConnectionFactoryImpl"
-            datastore="amazons3" transactional="false"/>
-        <connectionfactory name="googlestorage/tx" class-name="org.datanucleus.store.json.ConnectionFactoryImpl"
-            datastore="googlestorage" transactional="true"/>
-        <connectionfactory name="googlestorage/nontx" class-name="org.datanucleus.store.json.ConnectionFactoryImpl"
-            datastore="googlestorage" transactional="false"/>
+        <connectionfactory name="json/tx" class-name="org.datanucleus.store.json.ConnectionFactoryImpl" datastore="json" transactional="true"/>
+        <connectionfactory name="amazons3/tx" class-name="org.datanucleus.store.json.ConnectionFactoryImpl" datastore="amazons3" transactional="true"/>
+        <connectionfactory name="googlestorage/tx" class-name="org.datanucleus.store.json.ConnectionFactoryImpl" datastore="googlestorage" transactional="true"/>
     </extension>
 
     <extension point="org.datanucleus.store_query_query">

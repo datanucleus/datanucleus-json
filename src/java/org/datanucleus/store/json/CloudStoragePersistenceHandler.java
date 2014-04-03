@@ -65,7 +65,7 @@ import org.xml.sax.SAXException;
 
 public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHandler
 {
-    CloudStoragePersistenceHandler(StoreManager storeMgr)
+    public CloudStoragePersistenceHandler(StoreManager storeMgr)
     {
         super(storeMgr);
     }
