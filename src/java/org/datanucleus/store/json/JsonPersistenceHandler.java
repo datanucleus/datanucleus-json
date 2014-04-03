@@ -183,11 +183,12 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             int[] fieldNumbers = cmd.getAllMemberPositions();
             op.provideFields(fieldNumbers, new StoreFieldManager(op, jsonobj, true, table));
 
+            String jsonString = jsonobj.toString();
             if (NucleusLogger.DATASTORE_NATIVE.isDebugEnabled())
             {
-                NucleusLogger.DATASTORE_NATIVE.debug("POST " + jsonobj.toString());
+                NucleusLogger.DATASTORE_NATIVE.debug("POST " + jsonString);
             }
-            write("POST",conn.getURL().toExternalForm(), conn, jsonobj, getHeaders("POST",options));
+            write("POST",conn.getURL().toExternalForm(), conn, jsonString, getHeaders("POST",options));
 
             if (ec.getStatistics() != null)
             {
@@ -343,11 +344,12 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             op.provideFields(updatedFieldNums, storeFM);
             op.provideFields(op.getClassMetaData().getPKMemberPositions(), storeFM);
 
+            String jsonString = jsonobj.toString();
             if (NucleusLogger.DATASTORE_NATIVE.isDebugEnabled())
             {
-                NucleusLogger.DATASTORE_NATIVE.debug("PUT " + jsonobj.toString());
+                NucleusLogger.DATASTORE_NATIVE.debug("PUT " + jsonString);
             }
-            write("PUT", conn.getURL().toExternalForm(), conn, jsonobj, getHeaders("PUT",options));
+            write("PUT", conn.getURL().toExternalForm(), conn, jsonString, getHeaders("PUT",options));
 
             if (ec.getStatistics() != null)
             {
@@ -564,15 +566,16 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         }
     }
 
-    protected void write(String method, String requestUri, URLConnection conn, JSONObject jsonobj, Map<String, String> headers)
+    protected void write(String method, String requestUri, URLConnection conn, String jsonString, Map<String, String> headers)
     {
         try
         {
             if (NucleusLogger.DATASTORE.isDebugEnabled())
             {
-                NucleusLogger.DATASTORE.debug("Writing to URL "+requestUri+" content "+jsonobj.toString());
+                NucleusLogger.DATASTORE.debug("Writing to URL "+requestUri+" content "+jsonString);
             }
-            int length = jsonobj.toString().length();
+
+            int length = jsonString.length();
             HttpURLConnection http = (HttpURLConnection)conn;
             Iterator<String> iterator = headers.keySet().iterator();
             while (iterator.hasNext())
@@ -588,7 +591,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             http.setConnectTimeout(10000);
             http.connect();
             OutputStream os = conn.getOutputStream();
-            os.write(jsonobj.toString().getBytes());
+            os.write(jsonString.getBytes());
             os.flush();
             os.close();
             handleHTTPErrorCode(http);

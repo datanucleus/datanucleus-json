@@ -96,7 +96,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
 
         JSONObject jsonobj = new JSONObject();
         op.provideFields(op.getClassMetaData().getAllMemberPositions(), new StoreFieldManager(op, jsonobj, true, table));
-        write("PUT", conn.getURL().getPath(), conn, jsonobj, getHeaders("PUT",options));
+        write("PUT", conn.getURL().getPath(), conn, jsonobj.toString(), getHeaders("PUT",options));
     }
 
     protected void createBucket(URLConnection conn, Map headers)
