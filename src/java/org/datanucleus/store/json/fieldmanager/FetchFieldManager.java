@@ -252,13 +252,6 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
     public Object fetchObjectField(int fieldNumber)
     {
-        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
-        if (jsonobj.isNull(memberName))
-        {
-            return null;
-        }
-
-        // Special cases
         AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber);
         ClassLoaderResolver clr = ec.getClassLoaderResolver();
         RelationType relationType = mmd.getRelationType(clr);
@@ -397,6 +390,11 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                 else
                 {
                     String colName = mapping.getColumn(0).getIdentifier();
+                    if (jsonobj.isNull(colName))
+                    {
+                        return null;
+                    }
+
                     Class datastoreType = TypeConverterHelper.getDatastoreTypeForTypeConverter(conv, mmd.getType());
                     if (datastoreType == String.class)
                     {
@@ -433,6 +431,11 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             else
             {
                 String colName = mapping.getColumn(0).getIdentifier();
+                if (jsonobj.isNull(colName))
+                {
+                    return null;
+                }
+
                 if (Boolean.class.isAssignableFrom(mmd.getType()))
                 {
                     return jsonobj.getBoolean(colName);
@@ -651,6 +654,11 @@ public class FetchFieldManager extends AbstractFetchFieldManager
         {
             // Persistable object - retrieve the string form of the identity, and find the object
             String colName = mapping.getColumn(0).getIdentifier();
+            if (jsonobj.isNull(colName))
+            {
+                return null;
+            }
+
             String idStr = (String)jsonobj.get(colName);
             if (idStr == null)
             {
@@ -674,6 +682,11 @@ public class FetchFieldManager extends AbstractFetchFieldManager
         else if (RelationType.isRelationMultiValued(relationType))
         {
             String colName = mapping.getColumn(0).getIdentifier();
+            if (jsonobj.isNull(colName))
+            {
+                return null;
+            }
+
             if (mmd.hasCollection())
             {
                 // Collection<PC>

@@ -319,13 +319,6 @@ public class StoreFieldManager extends AbstractStoreFieldManager
         MemberColumnMapping mapping = getColumnMapping(fieldNumber);
         String name = mapping.getColumn(0).getIdentifier();
 
-        if (value == null)
-        {
-            // TODO Cater for multiple columns
-            jsonobj.put(name, JSONObject.NULL);
-            return;
-        }
-
         if (relationType == RelationType.NONE)
         {
             if (mapping.getTypeConverter() != null)
@@ -334,6 +327,13 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 Object datastoreValue = mapping.getTypeConverter().toDatastoreType(value);
                 if (mapping.getNumberOfColumns() > 1)
                 {
+                    if (value == null)
+                    {
+                        // TODO Cater for multiple columns
+                        jsonobj.put(name, JSONObject.NULL);
+                        return;
+                    }
+
                     for (int i=0;i<mapping.getNumberOfColumns();i++)
                     {
                         // TODO Persist as the correct column type since the typeConverter type may not be directly persistable
@@ -343,92 +343,113 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 }
                 else
                 {
+                    if (value == null)
+                    {
+                        jsonobj.put(name, JSONObject.NULL);
+                        return;
+                    }
+
                     jsonobj.put(mapping.getColumn(0).getIdentifier(), datastoreValue);
                 }
             }
-            else if (value instanceof Boolean)
-            {
-                jsonobj.put(name, ((Boolean)value).booleanValue());
-            }
-            else if (value instanceof Integer)
-            {
-                jsonobj.put(name, ((Integer)value).intValue());
-            }
-            else if (value instanceof Long)
-            {
-                jsonobj.put(name, ((Long)value).longValue());
-            }
-            else if (value instanceof Double)
-            {
-                jsonobj.put(name, ((Double)value).doubleValue());
-            }
-            else if (value instanceof Enum)
-            {
-                if (MetaDataUtils.isJdbcTypeNumeric(mapping.getColumn(0).getJdbcType()))
-                {
-                    jsonobj.put(name, ((Enum)value).ordinal());
-                }
-                else
-                {
-                    jsonobj.put(name, ((Enum)value).name());
-                }
-            }
-            else if (value instanceof BigDecimal)
-            {
-                jsonobj.put(name, value);
-            }
-            else if (value instanceof BigInteger)
-            {
-                jsonobj.put(name, value);
-            }
-            else if (value instanceof Collection)
-            {
-                // Collection<Non-PC> will be returned as JSONArray
-                jsonobj.put(name, value);
-            }
-            else if (value instanceof Map)
-            {
-                jsonobj.put(name, value);
-            }
             else
             {
-                // See if we can persist it as a Long/String
-                boolean useLong = MetaDataUtils.isJdbcTypeNumeric(mapping.getColumn(0).getJdbcType());
-                TypeConverter longConv = ec.getNucleusContext().getTypeManager().getTypeConverterForType(mmd.getType(), Long.class);
-                if (useLong)
+                if (value == null)
                 {
-                    if (longConv != null)
+                    jsonobj.put(name, JSONObject.NULL);
+                    return;
+                }
+
+                if (value instanceof Boolean)
+                {
+                    jsonobj.put(name, ((Boolean)value).booleanValue());
+                }
+                else if (value instanceof Integer)
+                {
+                    jsonobj.put(name, ((Integer)value).intValue());
+                }
+                else if (value instanceof Long)
+                {
+                    jsonobj.put(name, ((Long)value).longValue());
+                }
+                else if (value instanceof Double)
+                {
+                    jsonobj.put(name, ((Double)value).doubleValue());
+                }
+                else if (value instanceof Enum)
+                {
+                    if (MetaDataUtils.isJdbcTypeNumeric(mapping.getColumn(0).getJdbcType()))
                     {
-                        jsonobj.put(name, longConv.toDatastoreType(value));
-                        return;
+                        jsonobj.put(name, ((Enum)value).ordinal());
                     }
+                    else
+                    {
+                        jsonobj.put(name, ((Enum)value).name());
+                    }
+                }
+                else if (value instanceof BigDecimal)
+                {
+                    jsonobj.put(name, value);
+                }
+                else if (value instanceof BigInteger)
+                {
+                    jsonobj.put(name, value);
+                }
+                else if (value instanceof Collection)
+                {
+                    // Collection<Non-PC> will be returned as JSONArray
+                    jsonobj.put(name, value);
+                }
+                else if (value instanceof Map)
+                {
+                    jsonobj.put(name, value);
                 }
                 else
                 {
-                    TypeConverter strConv = ec.getNucleusContext().getTypeManager().getTypeConverterForType(mmd.getType(), String.class);
-                    if (strConv != null)
+                    // See if we can persist it as a Long/String
+                    boolean useLong = MetaDataUtils.isJdbcTypeNumeric(mapping.getColumn(0).getJdbcType());
+                    TypeConverter longConv = ec.getNucleusContext().getTypeManager().getTypeConverterForType(mmd.getType(), Long.class);
+                    if (useLong)
                     {
-                        jsonobj.put(name, strConv.toDatastoreType(value));
-                        return;
+                        if (longConv != null)
+                        {
+                            jsonobj.put(name, longConv.toDatastoreType(value));
+                            return;
+                        }
                     }
-                    else if (longConv != null)
+                    else
                     {
-                        jsonobj.put(name, longConv.toDatastoreType(value));
-                        return;
+                        TypeConverter strConv = ec.getNucleusContext().getTypeManager().getTypeConverterForType(mmd.getType(), String.class);
+                        if (strConv != null)
+                        {
+                            jsonobj.put(name, strConv.toDatastoreType(value));
+                            return;
+                        }
+                        else if (longConv != null)
+                        {
+                            jsonobj.put(name, longConv.toDatastoreType(value));
+                            return;
+                        }
                     }
+
+                    // Fallback to persist as a JSONObject and see what happens
+                    JSONObject jsonobjfield = new JSONObject(value);
+                    jsonobjfield.put("class", value.getClass().getName());
+                    jsonobj.put(name, jsonobjfield);
                 }
 
-                // Fallback to persist as a JSONObject and see what happens
-                JSONObject jsonobjfield = new JSONObject(value);
-                jsonobjfield.put("class", value.getClass().getName());
-                jsonobj.put(name, jsonobjfield);
+                return;
             }
-
-            return;
         }
         else if (RelationType.isRelationSingleValued(relationType))
         {
             // 1-1, N-1 relation, so store the "id"
+            if (value == null)
+            {
+                jsonobj.put(name, JSONObject.NULL);
+                return;
+            }
+
             Object valuePC = ec.persistObjectInternal(value, op, fieldNumber, -1);
             Object valueId = ec.getApiAdapter().getIdForObject(valuePC);
             jsonobj.put(name, IdentityUtils.getPersistableIdentityForId(ec.getApiAdapter(), valueId));
@@ -437,6 +458,12 @@ public class StoreFieldManager extends AbstractStoreFieldManager
         else if (RelationType.isRelationMultiValued(relationType))
         {
             // Collection/Map/Array
+            if (value == null)
+            {
+                jsonobj.put(name, JSONObject.NULL);
+                return;
+            }
+
             if (mmd.hasCollection())
             {
                 Collection idColl = new ArrayList();
