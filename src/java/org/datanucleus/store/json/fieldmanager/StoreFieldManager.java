@@ -42,7 +42,7 @@ import org.datanucleus.store.schema.table.MemberColumnMapping;
 import org.datanucleus.store.schema.table.Table;
 import org.datanucleus.store.types.converters.TypeConverter;
 import org.datanucleus.util.ClassUtils;
-
+import org.datanucleus.util.NucleusLogger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -257,10 +257,77 @@ public class StoreFieldManager extends AbstractStoreFieldManager
         if (relationType != RelationType.NONE && MetaDataUtils.getInstance().isMemberEmbedded(ec.getMetaDataManager(), clr, mmd, relationType, null))
         {
             // Embedded field
-            if (RelationType.isRelationSingleValued(relationType))
+            try
             {
-                // Persist as flat embedded
-                // TODO Support nested embedding in JSON object
+                storeObjectFieldEmbedded(fieldNumber, value, mmd, clr, relationType);
+                return;
+            }
+            catch (JSONException e)
+            {
+                throw new NucleusException(e.getMessage(), e);
+            }
+        }
+
+        try
+        {
+            storeObjectFieldInternal(fieldNumber, value, mmd, clr, relationType);
+        }
+        catch (JSONException e)
+        {
+            throw new NucleusException(e.getMessage(), e);
+        }
+    }
+
+    protected void storeObjectFieldEmbedded(int fieldNumber, Object value, AbstractMemberMetaData mmd, ClassLoaderResolver clr, RelationType relationType)
+    throws JSONException
+    {
+        if (RelationType.isRelationSingleValued(relationType))
+        {
+            // Embedded PC : Can be stored nested in the JSON doc, or flat
+            boolean nested = false;
+            String nestedStr = mmd.getValueForExtension("nested");
+            if (nestedStr != null && nestedStr.equalsIgnoreCase("true"))
+            {
+                nested = true;
+            }
+
+            if (nested)
+            {
+                // Nested embedded object. Store JSONObject under this name
+                if (value == null)
+                {
+                    MemberColumnMapping mapping = getColumnMapping(fieldNumber);
+                    String name = mapping.getColumn(0).getIdentifier();
+                    jsonobj.put(name, JSONObject.NULL);
+                    return;
+                }
+                else
+                {
+                    AbstractClassMetaData embcmd = ec.getMetaDataManager().getMetaDataForClass(value.getClass(), clr);
+                    if (embcmd == null)
+                    {
+                        throw new NucleusUserException("Field " + mmd.getFullFieldName() +
+                            " specified as embedded but metadata not found for the class of type " + mmd.getTypeName());
+                    }
+
+                    // Nested embedded object in JSON object
+                    JSONObject embobj = new JSONObject();
+
+                    ObjectProvider embOP = ec.findObjectProviderForEmbedded(value, op, mmd);
+                    StoreFieldManager storeEmbFM = new StoreFieldManager(embOP, embobj, insert, table);
+                    embOP.provideFields(embcmd.getAllMemberPositions(), storeEmbFM);
+
+                    NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED. This is experimental : " + embobj);
+
+                    MemberColumnMapping mapping = getColumnMapping(fieldNumber);
+                    String name = mapping.getColumn(0).getIdentifier();
+                    jsonobj.put(name, embobj);
+                    return;
+                }
+            }
+            else
+            {
+                // Flat embedded. Store as multiple properties in the owner object
                 AbstractClassMetaData embCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
                 int[] embMmdPosns = embCmd.getAllMemberPositions();
                 List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>();
@@ -280,7 +347,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                             MemberColumnMapping mapping = table.getMemberColumnMappingForEmbeddedMember(colEmbMmds);
                             for (int j=0;j<mapping.getNumberOfColumns();j++)
                             {
-                                // TODO Put null in this column
+                                jsonobj.put(mapping.getColumn(j).getIdentifier(), JSONObject.NULL);
                             }
                         }
                         else if (Object.class.isAssignableFrom(embMmd.getType()))
@@ -296,23 +363,14 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 embOP.provideFields(embMmdPosns, storeEmbFM);
                 return;
             }
-            else if (RelationType.isRelationMultiValued(relationType))
-            {
-                // TODO Support nested embedding in JSON object
-                throw new NucleusUserException("Dont support embedded multi-valued field at " + mmd.getFullFieldName() + " with Excel");
-            }
         }
-
-        try
+        else if (RelationType.isRelationMultiValued(relationType))
         {
-            storeObjectFieldInternal(fieldNumber, value, mmd, clr, relationType);
-        }
-        catch (JSONException e)
-        {
-            throw new NucleusException(e.getMessage(), e);
+            // TODO Support nested embedding in JSON object
+            throw new NucleusUserException("Dont support embedded multi-valued field at " + mmd.getFullFieldName() + " with Excel");
         }
     }
-
+        
     protected void storeObjectFieldInternal(int fieldNumber, Object value, AbstractMemberMetaData mmd, ClassLoaderResolver clr, RelationType relationType)
     throws JSONException
     {
@@ -398,12 +456,13 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 else if (value instanceof Collection)
                 {
                     // Collection<Non-PC> will be returned as JSONArray
-                    jsonobj.put(name, value);
+                    jsonobj.put(name, (Collection)value);
                 }
                 else if (value instanceof Map)
                 {
-                    jsonobj.put(name, value);
+                    jsonobj.put(name, (Map)value);
                 }
+                // TODO Support array
                 else
                 {
                     // See if we can persist it as a Long/String

@@ -51,8 +51,8 @@ import org.datanucleus.store.types.converters.MultiColumnConverter;
 import org.datanucleus.store.types.converters.TypeConverter;
 import org.datanucleus.store.types.converters.TypeConverterHelper;
 import org.datanucleus.util.ClassUtils;
+import org.datanucleus.util.NucleusLogger;
 import org.datanucleus.util.TypeConversionHelper;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -258,23 +258,13 @@ public class FetchFieldManager extends AbstractFetchFieldManager
         if (relationType != RelationType.NONE && MetaDataUtils.getInstance().isMemberEmbedded(ec.getMetaDataManager(), clr, mmd, relationType, null))
         {
             // Embedded field
-            if (RelationType.isRelationSingleValued(relationType))
+            try
             {
-                // Retrieve as flat embedded
-                // TODO Support nested embedding in JSON object
-                // TODO Null detection
-                List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>();
-                embMmds.add(mmd);
-                AbstractClassMetaData embCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
-                ObjectProvider embOP = ec.newObjectProviderForEmbedded(embCmd, op, fieldNumber);
-                FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embOP, jsonobj, embMmds, table);
-                embOP.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
-                return embOP.getObject();
+                return fetchObjectFieldEmbedded(fieldNumber, mmd, clr, relationType);
             }
-            else if (RelationType.isRelationMultiValued(relationType))
+            catch (JSONException e)
             {
-                // TODO Support nested embedding in JSON object
-                throw new NucleusUserException("Dont support embedded multi-valued field at " + mmd.getFullFieldName() + " with Excel");
+                throw new NucleusException(e.getMessage(), e);
             }
         }
 
@@ -286,6 +276,63 @@ public class FetchFieldManager extends AbstractFetchFieldManager
         {
             throw new NucleusException(e.getMessage(), e);
         }
+    }
+
+    protected Object fetchObjectFieldEmbedded(int fieldNumber, AbstractMemberMetaData mmd, ClassLoaderResolver clr, RelationType relationType)
+    throws JSONException
+    {
+        // Embedded field
+        if (RelationType.isRelationSingleValued(relationType))
+        {
+            // Can be stored nested in the JSON doc, or flat
+            boolean nested = false;
+            String nestedStr = mmd.getValueForExtension("nested");
+            if (nestedStr != null && nestedStr.equalsIgnoreCase("true"))
+            {
+                nested = true;
+            }
+            if (nested)
+            {
+                // Nested embedded object. JSONObject stored under this name
+                MemberColumnMapping mapping = getColumnMapping(fieldNumber);
+                String name = mapping.getColumn(0).getIdentifier();
+                if (jsonobj.isNull(name))
+                {
+                    return null;
+                }
+
+                JSONObject embobj = jsonobj.getJSONObject(name);
+                NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED; This is experimental : " + embobj);
+                AbstractClassMetaData embcmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
+                if (embcmd == null)
+                {
+                    throw new NucleusUserException("Field " + mmd.getFullFieldName() + " marked as embedded but no such metadata");
+                }
+
+                ObjectProvider embOP = ec.newObjectProviderForEmbedded(embcmd, op, fieldNumber);
+                FetchFieldManager fetchFM = new FetchFieldManager(embOP, embobj, table);
+                embOP.replaceFields(embcmd.getAllMemberPositions(), fetchFM);
+                return embOP.getObject();
+            }
+            else
+            {
+                // Flat embedded. Stored as multiple properties in the owner object
+                // TODO Null detection
+                List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>();
+                embMmds.add(mmd);
+                AbstractClassMetaData embCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
+                ObjectProvider embOP = ec.newObjectProviderForEmbedded(embCmd, op, fieldNumber);
+                FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embOP, jsonobj, embMmds, table);
+                embOP.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
+                return embOP.getObject();
+            }
+        }
+        else if (RelationType.isRelationMultiValued(relationType))
+        {
+            // TODO Support nested embedding in JSON object
+            throw new NucleusUserException("Dont support embedded multi-valued field at " + mmd.getFullFieldName() + " with Excel");
+        }
+        return null;
     }
 
     protected Object fetchObjectFieldInternal(int fieldNumber, AbstractMemberMetaData mmd, ClassLoaderResolver clr, RelationType relationType)
