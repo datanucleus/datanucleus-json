@@ -310,6 +310,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                 }
 
                 ObjectProvider embOP = ec.newObjectProviderForEmbedded(embcmd, op, fieldNumber);
+                // TODO This FieldManager will not get field numbers right for the "table" since that assumes flat embedding
                 FetchFieldManager fetchFM = new FetchFieldManager(embOP, embobj, table);
                 embOP.replaceFields(embcmd.getAllMemberPositions(), fetchFM);
                 return embOP.getObject();

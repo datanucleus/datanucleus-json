@@ -314,6 +314,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                     JSONObject embobj = new JSONObject();
 
                     ObjectProvider embOP = ec.findObjectProviderForEmbedded(value, op, mmd);
+                    // TODO This FieldManager will not get field numbers right for the "table" since that assumes flat embedding
                     StoreFieldManager storeEmbFM = new StoreFieldManager(embOP, embobj, insert, table);
                     embOP.provideFields(embcmd.getAllMemberPositions(), storeEmbFM);
 
