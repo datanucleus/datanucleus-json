@@ -291,37 +291,31 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             {
                 nested = true;
             }
+
+            AbstractClassMetaData embCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
+            List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>();
+            embMmds.add(mmd);
             if (nested)
             {
                 // Nested embedded object. JSONObject stored under this name
                 MemberColumnMapping mapping = getColumnMapping(fieldNumber);
-                String name = mapping.getColumn(0).getIdentifier();
+                String name = (mapping != null ? mapping.getColumn(0).getIdentifier() : mmd.getName());
                 if (jsonobj.isNull(name))
                 {
                     return null;
                 }
-
                 JSONObject embobj = jsonobj.getJSONObject(name);
                 NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED; This is experimental : " + embobj);
-                AbstractClassMetaData embcmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
-                if (embcmd == null)
-                {
-                    throw new NucleusUserException("Field " + mmd.getFullFieldName() + " marked as embedded but no such metadata");
-                }
 
-                ObjectProvider embOP = ec.newObjectProviderForEmbedded(embcmd, op, fieldNumber);
-                // TODO This FieldManager will not get field numbers right for the "table" since that assumes flat embedding
-                FetchFieldManager fetchFM = new FetchFieldManager(embOP, embobj, table);
-                embOP.replaceFields(embcmd.getAllMemberPositions(), fetchFM);
+                ObjectProvider embOP = ec.newObjectProviderForEmbedded(embCmd, op, fieldNumber);
+                FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embOP, embobj, embMmds, table);
+                embOP.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
                 return embOP.getObject();
             }
             else
             {
                 // Flat embedded. Stored as multiple properties in the owner object
                 // TODO Null detection
-                List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>();
-                embMmds.add(mmd);
-                AbstractClassMetaData embCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
                 ObjectProvider embOP = ec.newObjectProviderForEmbedded(embCmd, op, fieldNumber);
                 FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embOP, jsonobj, embMmds, table);
                 embOP.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);

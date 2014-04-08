@@ -291,6 +291,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 nested = true;
             }
 
+            AbstractClassMetaData embCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
             if (nested)
             {
                 // Nested embedded object. Store JSONObject under this name
@@ -303,25 +304,18 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 }
                 else
                 {
-                    AbstractClassMetaData embcmd = ec.getMetaDataManager().getMetaDataForClass(value.getClass(), clr);
-                    if (embcmd == null)
-                    {
-                        throw new NucleusUserException("Field " + mmd.getFullFieldName() +
-                            " specified as embedded but metadata not found for the class of type " + mmd.getTypeName());
-                    }
-
                     // Nested embedded object in JSON object
                     JSONObject embobj = new JSONObject();
 
+                    List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>();
+                    embMmds.add(mmd);
                     ObjectProvider embOP = ec.findObjectProviderForEmbedded(value, op, mmd);
-                    // TODO This FieldManager will not get field numbers right for the "table" since that assumes flat embedding
-                    StoreFieldManager storeEmbFM = new StoreFieldManager(embOP, embobj, insert, table);
-                    embOP.provideFields(embcmd.getAllMemberPositions(), storeEmbFM);
-
+                    StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(embOP, embobj, insert, embMmds, table);
+                    embOP.provideFields(embCmd.getAllMemberPositions(), storeEmbFM);
                     NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED. This is experimental : " + embobj);
 
-                    MemberColumnMapping mapping = getColumnMapping(fieldNumber);
-                    String name = mapping.getColumn(0).getIdentifier();
+                    MemberColumnMapping mapping = getColumnMapping(fieldNumber); // TODO Update CompleteClassTable so that this has a mapping
+                    String name = (mapping != null ? mapping.getColumn(0).getIdentifier() : mmd.getName());
                     jsonobj.put(name, embobj);
                     return;
                 }
@@ -329,7 +323,6 @@ public class StoreFieldManager extends AbstractStoreFieldManager
             else
             {
                 // Flat embedded. Store as multiple properties in the owner object
-                AbstractClassMetaData embCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
                 int[] embMmdPosns = embCmd.getAllMemberPositions();
                 List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>();
                 embMmds.add(mmd);

@@ -92,35 +92,15 @@ public class StoreEmbeddedFieldManager extends StoreFieldManager
         if (relationType != RelationType.NONE && MetaDataUtils.getInstance().isMemberEmbedded(ec.getMetaDataManager(), clr, mmd, relationType, lastMmd))
         {
             // Embedded field
-            if (RelationType.isRelationSingleValued(relationType))
+            try
             {
-                // Persistable object embedded into this table
-                Class embcls = mmd.getType();
-                AbstractClassMetaData embcmd = ec.getMetaDataManager().getMetaDataForClass(embcls, clr);
-                if (embcmd != null)
-                {
-                    ObjectProvider embOP = null;
-                    if (value != null)
-                    {
-                        embOP = ec.findObjectProviderForEmbedded(value, op, mmd);
-                    }
-                    else
-                    {
-                        embOP = ec.newObjectProviderForEmbedded(embcmd, op, fieldNumber);
-                    }
-
-                    List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>(mmds);
-                    embMmds.add(mmd);
-                    embOP.provideFields(embcmd.getAllMemberPositions(), new StoreEmbeddedFieldManager(embOP, jsonobj, insert, embMmds, table));
-                    return;
-                }
+                storeObjectFieldEmbedded(fieldNumber, value, mmd, clr, relationType);
+                return;
             }
-        }
-        else
-        {
-            // TODO Embedded Collection
-            NucleusLogger.PERSISTENCE.debug("Field=" + mmd.getFullFieldName() + " not currently supported (embedded), storing as null");
-            return;
+            catch (JSONException e)
+            {
+                throw new NucleusException(e.getMessage(), e);
+            }
         }
 
         if (op == null)
@@ -140,6 +120,78 @@ public class StoreEmbeddedFieldManager extends StoreFieldManager
         catch (JSONException e)
         {
             throw new NucleusException(e.getMessage(), e);
+        }
+    }
+
+    protected void storeObjectFieldEmbedded(int fieldNumber, Object value, AbstractMemberMetaData mmd, ClassLoaderResolver clr, RelationType relationType)
+    throws JSONException
+    {
+        if (RelationType.isRelationSingleValued(relationType))
+        {
+            // Embedded PC : Can be stored nested in the JSON doc, or flat
+            boolean nested = false;
+            String nestedStr = mmd.getValueForExtension("nested");
+            if (nestedStr != null && nestedStr.equalsIgnoreCase("true"))
+            {
+                nested = true;
+            }
+
+            AbstractClassMetaData embCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
+            if (nested)
+            {
+                // Nested embedded object. Store JSONObject under this name
+                if (value == null)
+                {
+                    MemberColumnMapping mapping = getColumnMapping(fieldNumber);
+                    String name = mapping.getColumn(0).getIdentifier();
+                    jsonobj.put(name, JSONObject.NULL);
+                    return;
+                }
+                else
+                {
+                    // Nested embedded object in JSON object
+                    JSONObject embobj = new JSONObject();
+
+                    List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>(mmds);
+                    embMmds.add(mmd);
+                    ObjectProvider embOP = ec.findObjectProviderForEmbedded(value, op, mmd);
+                    StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(embOP, embobj, insert, embMmds, table);
+                    embOP.provideFields(embCmd.getAllMemberPositions(), storeEmbFM);
+                    NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED. This is experimental : " + embobj);
+
+                    MemberColumnMapping mapping = getColumnMapping(fieldNumber); // TODO Make sure CompleteClassTable has this mapping
+                    String name = (mapping != null ? mapping.getColumn(0).getIdentifier() : mmd.getName());
+                    jsonobj.put(name, embobj);
+                    return;
+                }
+            }
+            else
+            {
+                // Persistable object embedded into this table
+                if (embCmd != null)
+                {
+                    ObjectProvider embOP = null;
+                    if (value != null)
+                    {
+                        embOP = ec.findObjectProviderForEmbedded(value, op, mmd);
+                    }
+                    else
+                    {
+                        embOP = ec.newObjectProviderForEmbedded(embCmd, op, fieldNumber);
+                    }
+
+                    List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>(mmds);
+                    embMmds.add(mmd);
+                    embOP.provideFields(embCmd.getAllMemberPositions(), new StoreEmbeddedFieldManager(embOP, jsonobj, insert, embMmds, table));
+                    return;
+                }
+            }
+        }
+        else
+        {
+            // TODO Embedded Collection
+            NucleusLogger.PERSISTENCE.debug("Field=" + mmd.getFullFieldName() + " not currently supported (embedded), storing as null");
+            return;
         }
     }
 }

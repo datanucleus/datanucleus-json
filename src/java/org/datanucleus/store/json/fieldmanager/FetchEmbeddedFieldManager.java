@@ -79,23 +79,14 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
         if (relationType != RelationType.NONE && MetaDataUtils.getInstance().isMemberEmbedded(ec.getMetaDataManager(), clr, mmd, relationType, null))
         {
             // Embedded field
-            if (RelationType.isRelationSingleValued(relationType))
+            try
             {
-                // Persistable object embedded into this table
-                List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>(mmds);
-                embMmds.add(mmd);
-                AbstractClassMetaData embCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
-                ObjectProvider embOP = ec.newObjectProviderForEmbedded(embCmd, op, fieldNumber);
-                FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embOP, jsonobj, embMmds, table);
-                embOP.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
-                return embOP.getObject();
+                return fetchObjectFieldEmbedded(fieldNumber, mmd, clr, relationType);
             }
-            else if (RelationType.isRelationMultiValued(relationType))
+            catch (JSONException e)
             {
-                // TODO Embedded Collection
-                NucleusLogger.PERSISTENCE.debug("Field=" + mmd.getFullFieldName() + " not currently supported (embedded)");
+                throw new NucleusException(e.getMessage(), e);
             }
-            return null; // Remove this when we support embedded
         }
 
         try
@@ -106,5 +97,56 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
         {
             throw new NucleusException(e.getMessage(), e);
         }
+    }
+
+    protected Object fetchObjectFieldEmbedded(int fieldNumber, AbstractMemberMetaData mmd, ClassLoaderResolver clr, RelationType relationType)
+    throws JSONException
+    {
+        if (RelationType.isRelationSingleValued(relationType))
+        {
+            // Can be stored nested in the JSON doc, or flat
+            boolean nested = false;
+            String nestedStr = mmd.getValueForExtension("nested");
+            if (nestedStr != null && nestedStr.equalsIgnoreCase("true"))
+            {
+                nested = true;
+            }
+
+            AbstractClassMetaData embCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
+            List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>(mmds);
+            embMmds.add(mmd);
+            if (nested)
+            {
+                // Nested embedded object. JSONObject stored under this name
+                MemberColumnMapping mapping = getColumnMapping(fieldNumber);
+                String name = (mapping != null ? mapping.getColumn(0).getIdentifier() : mmd.getName());
+                if (jsonobj.isNull(name))
+                {
+                    return null;
+                }
+                JSONObject embobj = jsonobj.getJSONObject(name);
+                NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED; This is experimental : " + embobj);
+
+                ObjectProvider embOP = ec.newObjectProviderForEmbedded(embCmd, op, fieldNumber);
+                FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embOP, embobj, embMmds, table);
+                embOP.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
+                return embOP.getObject();
+            }
+            else
+            {
+                // Flat embedded. Stored as multiple properties in the owner object
+                ObjectProvider embOP = ec.newObjectProviderForEmbedded(embCmd, op, fieldNumber);
+                FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embOP, jsonobj, embMmds, table);
+                embOP.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
+                return embOP.getObject();
+            }
+        }
+        else if (RelationType.isRelationMultiValued(relationType))
+        {
+            // TODO Embedded Collection
+            NucleusLogger.PERSISTENCE.debug("Field=" + mmd.getFullFieldName() + " not currently supported (embedded container)");
+            return null;
+        }
+        return null;
     }
 }
