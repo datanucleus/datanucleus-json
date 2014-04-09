@@ -66,6 +66,7 @@ public class JsonStoreManager extends AbstractStoreManager
         set.add(StoreManager.OPTION_DATASTORE_ID);
         set.add(StoreManager.OPTION_TXN_ISOLATION_READ_COMMITTED);
         set.add(StoreManager.OPTION_ORM);
+        set.add(StoreManager.OPTION_ORM_EMBEDDED_PC_NESTED);
         return set;
     }
 
