@@ -127,7 +127,7 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
                 JSONObject embobj = jsonobj.getJSONObject(name);
                 NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED; This is experimental : " + embobj);
 
-                ObjectProvider embOP = ec.newObjectProviderForEmbedded(embCmd, op, fieldNumber);
+                ObjectProvider embOP = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, op, fieldNumber);
                 FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embOP, embobj, embMmds, table);
                 embOP.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
                 return embOP.getObject();
@@ -135,7 +135,7 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
             else
             {
                 // Flat embedded. Stored as multiple properties in the owner object
-                ObjectProvider embOP = ec.newObjectProviderForEmbedded(embCmd, op, fieldNumber);
+                ObjectProvider embOP = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, op, fieldNumber);
                 FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embOP, jsonobj, embMmds, table);
                 embOP.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
                 return embOP.getObject();
