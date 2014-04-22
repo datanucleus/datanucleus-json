@@ -39,7 +39,6 @@ import org.datanucleus.exceptions.NucleusDataStoreException;
 import org.datanucleus.exceptions.NucleusException;
 import org.datanucleus.exceptions.NucleusObjectNotFoundException;
 import org.datanucleus.identity.IdentityUtils;
-import org.datanucleus.identity.OID;
 import org.datanucleus.identity.OIDFactory;
 import org.datanucleus.metadata.AbstractClassMetaData;
 import org.datanucleus.metadata.AbstractMemberMetaData;
@@ -112,7 +111,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             if (cmd.getIdentityType() == IdentityType.DATASTORE)
             {
                 String memberName = table.getDatastoreIdColumn().getIdentifier();
-                Object idKey = ((OID)op.getInternalObjectId()).getKeyValue();
+                Object idKey = IdentityUtils.getTargetKeyForDatastoreIdentity(op.getInternalObjectId());
                 try
                 {
                     jsonobj.put(memberName, idKey);
@@ -476,7 +475,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             if (cmd.getIdentityType() == IdentityType.DATASTORE)
             {
                 String memberName = table.getDatastoreIdColumn().getIdentifier();
-                Object idKey = ((OID)op.getInternalObjectId()).getKeyValue();
+                Object idKey = IdentityUtils.getTargetKeyForDatastoreIdentity(op.getInternalObjectId());
                 try
                 {
                     jsonobj.put(memberName, idKey);
@@ -854,7 +853,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
 
         if (cmd.getIdentityType() == IdentityType.DATASTORE)
         {
-            url += ((OID)op.getInternalObjectId()).getKeyValue();
+            url += IdentityUtils.getTargetKeyForDatastoreIdentity(op.getInternalObjectId());
         }
         else if (cmd.getIdentityType() == IdentityType.APPLICATION)
         {
