@@ -39,7 +39,6 @@ import org.datanucleus.exceptions.NucleusDataStoreException;
 import org.datanucleus.exceptions.NucleusException;
 import org.datanucleus.exceptions.NucleusObjectNotFoundException;
 import org.datanucleus.identity.IdentityUtils;
-import org.datanucleus.identity.OIDFactory;
 import org.datanucleus.metadata.AbstractClassMetaData;
 import org.datanucleus.metadata.AbstractMemberMetaData;
 import org.datanucleus.metadata.IdentityType;
@@ -775,11 +774,11 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                     Object key = json.get(memberName);
                     if (key instanceof String)
                     {
-                        id = OIDFactory.getInstance(ec.getNucleusContext(), (String)key);
+                        id = ec.getNucleusContext().getIdentityManager().getDatastoreId((String)key);
                     }
                     else
                     {
-                        id = OIDFactory.getInstance(ec.getNucleusContext(), cmd.getFullClassName(), key);
+                        id = ec.getNucleusContext().getIdentityManager().getDatastoreId(cmd.getFullClassName(), key);
                     }
                 }
                 else if (cmd.getIdentityType() == IdentityType.APPLICATION)

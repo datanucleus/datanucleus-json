@@ -505,7 +505,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
             Object valuePC = ec.persistObjectInternal(value, op, fieldNumber, -1);
             Object valueId = ec.getApiAdapter().getIdForObject(valuePC);
-            jsonobj.put(name, IdentityUtils.getPersistableIdentityForId(ec.getApiAdapter(), valueId));
+            jsonobj.put(name, IdentityUtils.getPersistableIdentityForId(valueId));
             return;
         }
         else if (RelationType.isRelationMultiValued(relationType))
@@ -527,7 +527,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                     Object element = collIter.next();
                     Object elementPC = ec.persistObjectInternal(element, op, fieldNumber, -1);
                     Object elementID = ec.getApiAdapter().getIdForObject(elementPC);
-                    idColl.add(IdentityUtils.getPersistableIdentityForId(ec.getApiAdapter(), elementID));
+                    idColl.add(IdentityUtils.getPersistableIdentityForId(elementID));
                 }
                 jsonobj.put(name, idColl);
                 return;
@@ -540,7 +540,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                     Object element = Array.get(value, i);
                     Object elementPC = ec.persistObjectInternal(element, op, fieldNumber, -1);
                     Object elementID = ec.getApiAdapter().getIdForObject(elementPC);
-                    ids.add(IdentityUtils.getPersistableIdentityForId(ec.getApiAdapter(), elementID));
+                    ids.add(IdentityUtils.getPersistableIdentityForId(elementID));
                 }
                 jsonobj.put(name, ids);
                 return;
@@ -562,7 +562,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                     {
                         Object keyPC = ec.persistObjectInternal(entry.getKey(), op, fieldNumber, -1);
                         key = ec.getApiAdapter().getIdForObject(keyPC);
-                        key = IdentityUtils.getPersistableIdentityForId(ec.getApiAdapter(), key);
+                        key = IdentityUtils.getPersistableIdentityForId(key);
                     }
                     else
                     {
@@ -572,7 +572,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                     {
                         Object valPC = ec.persistObjectInternal(entry.getValue(), op, fieldNumber, -1);
                         val = ec.getApiAdapter().getIdForObject(valPC);
-                        val = IdentityUtils.getPersistableIdentityForId(ec.getApiAdapter(), val);
+                        val = IdentityUtils.getPersistableIdentityForId(val);
                     }
                     else
                     {

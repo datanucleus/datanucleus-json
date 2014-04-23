@@ -43,7 +43,6 @@ import org.datanucleus.Configuration;
 import org.datanucleus.exceptions.NucleusDataStoreException;
 import org.datanucleus.exceptions.NucleusException;
 import org.datanucleus.identity.IdentityUtils;
-import org.datanucleus.identity.OIDFactory;
 import org.datanucleus.metadata.AbstractClassMetaData;
 import org.datanucleus.metadata.IdentityType;
 import org.datanucleus.state.ObjectProvider;
@@ -363,11 +362,11 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                     Object key = json.get(memberName);
                     if (key instanceof String)
                     {
-                        id = OIDFactory.getInstance(ec.getNucleusContext(), (String)key);
+                        id = ec.getNucleusContext().getIdentityManager().getDatastoreId((String)key);
                     }
                     else
                     {
-                        id = OIDFactory.getInstance(ec.getNucleusContext(), cmd.getFullClassName(), key);
+                        id = ec.getNucleusContext().getIdentityManager().getDatastoreId(cmd.getFullClassName(), key);
                     }
                 }
                 else if (cmd.getIdentityType() == IdentityType.APPLICATION)
