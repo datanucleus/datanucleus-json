@@ -63,10 +63,6 @@ import org.json.JSONObject;
 
 public class JsonPersistenceHandler extends AbstractPersistenceHandler
 {
-    /** Localiser for messages. */
-    protected static final Localiser LOCALISER_JSON = Localiser.getInstance(
-        "org.datanucleus.store.json.Localisation", JsonStoreManager.class.getClassLoader());
-
     JsonPersistenceHandler(StoreManager storeMgr)
     {
         super(storeMgr);
@@ -102,8 +98,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             long startTime = System.currentTimeMillis();
             if (NucleusLogger.DATASTORE_PERSIST.isDebugEnabled())
             {
-                NucleusLogger.DATASTORE_PERSIST.debug(LOCALISER_JSON.msg("JSON.Insert.Start", 
-                    op.getObjectAsPrintable(), op.getInternalObjectId()));
+                NucleusLogger.DATASTORE_PERSIST.debug(Localiser.msg("JSON.Insert.Start", op.getObjectAsPrintable(), op.getInternalObjectId()));
             }
 
             JSONObject jsonobj = new JSONObject();
@@ -131,7 +126,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                     op.setTransactionalVersion(new Long(versionNumber));
                     if (NucleusLogger.DATASTORE.isDebugEnabled())
                     {
-                        NucleusLogger.DATASTORE.debug(LOCALISER_JSON.msg("JSON.Insert.ObjectPersistedWithVersion",
+                        NucleusLogger.DATASTORE.debug(Localiser.msg("JSON.Insert.ObjectPersistedWithVersion",
                             StringUtils.toJVMIDString(op.getObject()), op.getInternalObjectId(), "" + versionNumber));
                     }
                     try
@@ -164,7 +159,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                     op.setTransactionalVersion(ts);
                     if (NucleusLogger.DATASTORE.isDebugEnabled())
                     {
-                        NucleusLogger.DATASTORE.debug(LOCALISER_JSON.msg("JSON.Insert.ObjectPersistedWithVersion",
+                        NucleusLogger.DATASTORE.debug(Localiser.msg("JSON.Insert.ObjectPersistedWithVersion",
                             StringUtils.toJVMIDString(op.getObject()), op.getInternalObjectId(), "" + ts));
                     }
                     try
@@ -197,8 +192,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
 
             if (NucleusLogger.DATASTORE_PERSIST.isDebugEnabled())
             {
-                NucleusLogger.DATASTORE_PERSIST.debug(LOCALISER_JSON.msg("JSON.ExecutionTime", 
-                    (System.currentTimeMillis() - startTime)));
+                NucleusLogger.DATASTORE_PERSIST.debug(Localiser.msg("JSON.ExecutionTime", (System.currentTimeMillis() - startTime)));
             }
         }
         finally
@@ -290,7 +284,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                     }
                     fieldStr.append(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumbers[i]).getName());
                 }
-                NucleusLogger.DATASTORE_PERSIST.debug(LOCALISER_JSON.msg("JSON.Update.Start", 
+                NucleusLogger.DATASTORE_PERSIST.debug(Localiser.msg("JSON.Update.Start", 
                     op.getObjectAsPrintable(), op.getInternalObjectId(), fieldStr.toString()));
             }
 
@@ -303,9 +297,8 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 {
                     if (NucleusLogger.DATASTORE.isDebugEnabled())
                     {
-                        NucleusLogger.DATASTORE.debug(LOCALISER_JSON.msg("JSON.Insert.ObjectPersistedWithVersion",
-                            StringUtils.toJVMIDString(op.getObject()), op.getInternalObjectId(), 
-                            "" + nextVersion));
+                        NucleusLogger.DATASTORE.debug(Localiser.msg("JSON.Insert.ObjectPersistedWithVersion",
+                            StringUtils.toJVMIDString(op.getObject()), op.getInternalObjectId(), "" + nextVersion));
                     }
                     try
                     {
@@ -321,7 +314,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                     op.setTransactionalVersion(nextVersion);
                     if (NucleusLogger.DATASTORE.isDebugEnabled())
                     {
-                        NucleusLogger.DATASTORE.debug(LOCALISER_JSON.msg("JSON.Insert.ObjectPersistedWithVersion",
+                        NucleusLogger.DATASTORE.debug(Localiser.msg("JSON.Insert.ObjectPersistedWithVersion",
                             StringUtils.toJVMIDString(op.getObject()), op.getInternalObjectId(), "" + nextVersion));
                     }
                     Timestamp ts = (Timestamp)nextVersion;
@@ -358,8 +351,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
 
             if (NucleusLogger.DATASTORE_PERSIST.isDebugEnabled())
             {
-                NucleusLogger.DATASTORE_PERSIST.debug(LOCALISER_JSON.msg("JSON.ExecutionTime", 
-                    (System.currentTimeMillis() - startTime)));
+                NucleusLogger.DATASTORE_PERSIST.debug(Localiser.msg("JSON.ExecutionTime", (System.currentTimeMillis() - startTime)));
             }
         }
         finally
@@ -383,8 +375,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             long startTime = System.currentTimeMillis();
             if (NucleusLogger.DATASTORE_PERSIST.isDebugEnabled())
             {
-                NucleusLogger.DATASTORE_PERSIST.debug(LOCALISER_JSON.msg("JSON.Delete.Start", 
-                    op.getObjectAsPrintable(), op.getInternalObjectId()));
+                NucleusLogger.DATASTORE_PERSIST.debug(Localiser.msg("JSON.Delete.Start", op.getObjectAsPrintable(), op.getInternalObjectId()));
             }
 
             HttpURLConnection http = (HttpURLConnection)conn;
@@ -419,8 +410,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
 
             if (NucleusLogger.DATASTORE_PERSIST.isDebugEnabled())
             {
-                NucleusLogger.DATASTORE_PERSIST.debug(LOCALISER_JSON.msg("JSON.ExecutionTime", 
-                    (System.currentTimeMillis() - startTime)));
+                NucleusLogger.DATASTORE_PERSIST.debug(Localiser.msg("JSON.ExecutionTime", (System.currentTimeMillis() - startTime)));
             }
         }
         catch (IOException e)
@@ -465,8 +455,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             long startTime = System.currentTimeMillis();
             if (NucleusLogger.DATASTORE_RETRIEVE.isDebugEnabled())
             {
-                NucleusLogger.DATASTORE_RETRIEVE.debug(LOCALISER_JSON.msg("JSON.Fetch.Start", 
-                    op.getObjectAsPrintable(), op.getInternalObjectId()));
+                NucleusLogger.DATASTORE_RETRIEVE.debug(Localiser.msg("JSON.Fetch.Start", op.getObjectAsPrintable(), op.getInternalObjectId()));
             }
 
             // Create JSON object with PK fields set and get the object
@@ -505,8 +494,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
 
             if (NucleusLogger.DATASTORE_RETRIEVE.isDebugEnabled())
             {
-                NucleusLogger.DATASTORE_RETRIEVE.debug(LOCALISER_JSON.msg("JSON.ExecutionTime",
-                    (System.currentTimeMillis() - startTime)));
+                NucleusLogger.DATASTORE_RETRIEVE.debug(Localiser.msg("JSON.ExecutionTime", (System.currentTimeMillis() - startTime)));
             }
         }
         finally

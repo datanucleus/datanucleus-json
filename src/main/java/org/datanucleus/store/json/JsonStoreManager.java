@@ -34,12 +34,18 @@ import org.datanucleus.store.NucleusConnection;
 import org.datanucleus.store.StoreData;
 import org.datanucleus.store.StoreManager;
 import org.datanucleus.store.schema.table.CompleteClassTable;
+import org.datanucleus.util.Localiser;
 
 /**
  * Store Manager for JSON datastores.
  */
 public class JsonStoreManager extends AbstractStoreManager
 {
+    static
+    {
+        Localiser.registerBundle("org.datanucleus.store.json.Localisation", JsonStoreManager.class.getClassLoader());
+    }
+
     public JsonStoreManager(ClassLoaderResolver clr, PersistenceNucleusContext ctx, Map<String, Object> props)
     {
         super("json", clr, ctx, props);
