@@ -119,7 +119,7 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
             {
                 // Nested embedded object. JSONObject stored under this name
                 MemberColumnMapping mapping = getColumnMapping(fieldNumber);
-                String name = (mapping != null ? mapping.getColumn(0).getIdentifier() : mmd.getName());
+                String name = (mapping != null ? mapping.getColumn(0).getName() : mmd.getName());
                 if (jsonobj.isNull(name))
                 {
                     return null;

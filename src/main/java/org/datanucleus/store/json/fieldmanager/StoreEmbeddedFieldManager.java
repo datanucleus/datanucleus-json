@@ -143,7 +143,7 @@ public class StoreEmbeddedFieldManager extends StoreFieldManager
                 if (value == null)
                 {
                     MemberColumnMapping mapping = getColumnMapping(fieldNumber);
-                    String name = mapping.getColumn(0).getIdentifier();
+                    String name = mapping.getColumn(0).getName();
                     jsonobj.put(name, JSONObject.NULL);
                     return;
                 }
@@ -160,7 +160,7 @@ public class StoreEmbeddedFieldManager extends StoreFieldManager
                     NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED. This is experimental : " + embobj);
 
                     MemberColumnMapping mapping = getColumnMapping(fieldNumber); // TODO Make sure CompleteClassTable has this mapping
-                    String name = (mapping != null ? mapping.getColumn(0).getIdentifier() : mmd.getName());
+                    String name = (mapping != null ? mapping.getColumn(0).getName() : mmd.getName());
                     jsonobj.put(name, embobj);
                     return;
                 }

@@ -358,7 +358,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                 final FieldManager fm = new FetchFieldManager(ec, cmd, json, table);
                 if (cmd.getIdentityType() == IdentityType.DATASTORE)
                 {
-                    String memberName = table.getDatastoreIdColumn().getIdentifier();
+                    String memberName = table.getDatastoreIdColumn().getName();
                     Object key = json.get(memberName);
                     if (key instanceof String)
                     {

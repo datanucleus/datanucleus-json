@@ -91,7 +91,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
         try
         {
-            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), (boolean)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), (boolean)value);
         }
         catch (JSONException e)
         {
@@ -108,7 +108,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
         try
         {
-            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), (int)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), (int)value);
         }
         catch (JSONException e)
         {
@@ -125,7 +125,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
         try
         {
-            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), Character.valueOf(value));
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), Character.valueOf(value));
         }
         catch (JSONException e)
         {
@@ -142,7 +142,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
         try
         {
-            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), (double)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), (double)value);
         }
         catch (JSONException e)
         {
@@ -159,7 +159,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
         try
         {
-            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), (double)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), (double)value);
         }
         catch (JSONException e)
         {
@@ -176,7 +176,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
         try
         {
-            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), (int)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), (int)value);
         }
         catch (JSONException e)
         {
@@ -193,7 +193,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
         try
         {
-            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), (long)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), (long)value);
         }
         catch (JSONException e)
         {
@@ -210,7 +210,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
         try
         {
-            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), (int)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), (int)value);
         }
         catch (JSONException e)
         {
@@ -229,11 +229,11 @@ public class StoreFieldManager extends AbstractStoreFieldManager
         {
             if (value == null)
             {
-                jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), JSONObject.NULL);
+                jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), JSONObject.NULL);
             }
             else
             {
-                jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getIdentifier(), value);
+                jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), value);
             }
         }
         catch (JSONException e)
@@ -298,7 +298,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 if (value == null)
                 {
                     MemberColumnMapping mapping = getColumnMapping(fieldNumber);
-                    String name = mapping.getColumn(0).getIdentifier();
+                    String name = mapping.getColumn(0).getName();
                     jsonobj.put(name, JSONObject.NULL);
                     return;
                 }
@@ -315,7 +315,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                     NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED. This is experimental : " + embobj);
 
                     MemberColumnMapping mapping = getColumnMapping(fieldNumber); // TODO Update CompleteClassTable so that this has a mapping
-                    String name = (mapping != null ? mapping.getColumn(0).getIdentifier() : mmd.getName());
+                    String name = (mapping != null ? mapping.getColumn(0).getName() : mmd.getName());
                     jsonobj.put(name, embobj);
                     return;
                 }
@@ -341,7 +341,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                             MemberColumnMapping mapping = table.getMemberColumnMappingForEmbeddedMember(colEmbMmds);
                             for (int j=0;j<mapping.getNumberOfColumns();j++)
                             {
-                                jsonobj.put(mapping.getColumn(j).getIdentifier(), JSONObject.NULL);
+                                jsonobj.put(mapping.getColumn(j).getName(), JSONObject.NULL);
                             }
                         }
                         else if (Object.class.isAssignableFrom(embMmd.getType()))
@@ -369,7 +369,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
     throws JSONException
     {
         MemberColumnMapping mapping = getColumnMapping(fieldNumber);
-        String name = mapping.getColumn(0).getIdentifier();
+        String name = mapping.getColumn(0).getName();
 
         if (relationType == RelationType.NONE)
         {
@@ -390,7 +390,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                     {
                         // TODO Persist as the correct column type since the typeConverter type may not be directly persistable
                         Object colValue = Array.get(datastoreValue, i);
-                        jsonobj.put(mapping.getColumn(i).getIdentifier(), colValue);
+                        jsonobj.put(mapping.getColumn(i).getName(), colValue);
                     }
                 }
                 else
@@ -401,7 +401,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                         return;
                     }
 
-                    jsonobj.put(mapping.getColumn(0).getIdentifier(), datastoreValue);
+                    jsonobj.put(mapping.getColumn(0).getName(), datastoreValue);
                 }
             }
             else

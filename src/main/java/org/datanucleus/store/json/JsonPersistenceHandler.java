@@ -104,7 +104,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             JSONObject jsonobj = new JSONObject();
             if (cmd.getIdentityType() == IdentityType.DATASTORE)
             {
-                String memberName = table.getDatastoreIdColumn().getIdentifier();
+                String memberName = table.getDatastoreIdColumn().getName();
                 Object idKey = IdentityUtils.getTargetKeyForDatastoreIdentity(op.getInternalObjectId());
                 try
                 {
@@ -119,7 +119,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             if (cmd.isVersioned())
             {
                 VersionMetaData vermd = cmd.getVersionMetaDataForClass();
-                String memberName = table.getVersionColumn().getIdentifier(); // TODO Version stored in field?
+                String memberName = table.getVersionColumn().getName(); // TODO Version stored in field?
                 if (vermd.getVersionStrategy() == VersionStrategy.VERSION_NUMBER)
                 {
                     long versionNumber = 1;
@@ -292,7 +292,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             if (cmd.isVersioned())
             {
                 VersionMetaData vermd = cmd.getVersionMetaDataForClass();
-                String memberName = table.getVersionColumn().getIdentifier(); // TODO Version stored in field?
+                String memberName = table.getVersionColumn().getName(); // TODO Version stored in field?
                 if (vermd.getVersionStrategy() == VersionStrategy.VERSION_NUMBER)
                 {
                     if (NucleusLogger.DATASTORE.isDebugEnabled())
@@ -462,7 +462,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             JSONObject jsonobj = new JSONObject();
             if (cmd.getIdentityType() == IdentityType.DATASTORE)
             {
-                String memberName = table.getDatastoreIdColumn().getIdentifier();
+                String memberName = table.getDatastoreIdColumn().getName();
                 Object idKey = IdentityUtils.getTargetKeyForDatastoreIdentity(op.getInternalObjectId());
                 try
                 {
@@ -758,7 +758,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 Object id = null;
                 if (cmd.getIdentityType() == IdentityType.DATASTORE)
                 {
-                    String memberName = table.getDatastoreIdColumn().getIdentifier();
+                    String memberName = table.getDatastoreIdColumn().getName();
                     Object key = json.get(memberName);
                     if (key instanceof String)
                     {
@@ -779,7 +779,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 {
                     // Extract the version for applying to the object
                     VersionMetaData vermd = cmd.getVersionMetaDataForClass();
-                    String memberName = table.getVersionColumn().getIdentifier();
+                    String memberName = table.getVersionColumn().getName();
                     long versionLong = -1;
                     try
                     {
@@ -851,7 +851,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             {
                 // Append the PK to the URL
                 AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(cmd.getPKMemberPositions()[0]);
-                String name = table.getMemberColumnMappingForMember(mmd).getColumn(0).getIdentifier();
+                String name = table.getMemberColumnMappingForMember(mmd).getColumn(0).getName();
                 url += jsonobj.get(name).toString();
                 // TODO Cater for multiple PK fields
             }

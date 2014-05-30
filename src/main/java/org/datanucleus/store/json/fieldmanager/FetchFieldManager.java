@@ -89,7 +89,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
     public boolean fetchBooleanField(int fieldNumber)
     {
-        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getName();
         if (jsonobj.isNull(memberName))
         {
             return false;
@@ -107,7 +107,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
     public byte fetchByteField(int fieldNumber)
     {
-        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getName();
         if (jsonobj.isNull(memberName))
         {
             return 0;
@@ -126,7 +126,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
     public char fetchCharField(int fieldNumber)
     {
-        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getName();
         if (jsonobj.isNull(memberName))
         {
             return 0;
@@ -144,7 +144,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
     public double fetchDoubleField(int fieldNumber)
     {
-        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getName();
         if (jsonobj.isNull(memberName))
         {
             return 0;
@@ -162,7 +162,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
     public float fetchFloatField(int fieldNumber)
     {
-        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getName();
         if (jsonobj.isNull(memberName))
         {
             return 0;
@@ -180,7 +180,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
     public int fetchIntField(int fieldNumber)
     {
-        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getName();
         if (jsonobj.isNull(memberName))
         {
             return 0;
@@ -198,7 +198,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
     
     public long fetchLongField(int fieldNumber)
     {
-        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getName();
         if (jsonobj.isNull(memberName))
         {
             return 0;
@@ -216,7 +216,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
     public short fetchShortField(int fieldNumber)
     {
-        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getName();
         if (jsonobj.isNull(memberName))
         {
             return 0;
@@ -234,7 +234,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
     public String fetchStringField(int fieldNumber)
     {
-        String memberName = getColumnMapping(fieldNumber).getColumn(0).getIdentifier();
+        String memberName = getColumnMapping(fieldNumber).getColumn(0).getName();
         if (jsonobj.isNull(memberName))
         {
             return null;
@@ -299,7 +299,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             {
                 // Nested embedded object. JSONObject stored under this name
                 MemberColumnMapping mapping = getColumnMapping(fieldNumber);
-                String name = (mapping != null ? mapping.getColumn(0).getIdentifier() : mmd.getName());
+                String name = (mapping != null ? mapping.getColumn(0).getName() : mmd.getName());
                 if (jsonobj.isNull(name))
                 {
                     return null;
@@ -373,7 +373,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
                     for (int i=0;i<mapping.getNumberOfColumns();i++)
                     {
-                        String colName = mapping.getColumn(i).getIdentifier();
+                        String colName = mapping.getColumn(i).getName();
                         if (colTypes[i] == String.class)
                         {
                             Array.set(valuesArr, i, jsonobj.getString(colName));
@@ -431,7 +431,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                 }
                 else
                 {
-                    String colName = mapping.getColumn(0).getIdentifier();
+                    String colName = mapping.getColumn(0).getName();
                     if (jsonobj.isNull(colName))
                     {
                         return null;
@@ -472,7 +472,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             }
             else
             {
-                String colName = mapping.getColumn(0).getIdentifier();
+                String colName = mapping.getColumn(0).getName();
                 if (jsonobj.isNull(colName))
                 {
                     return null;
@@ -695,7 +695,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
         else if (RelationType.isRelationSingleValued(relationType))
         {
             // Persistable object - retrieve the string form of the identity, and find the object
-            String colName = mapping.getColumn(0).getIdentifier();
+            String colName = mapping.getColumn(0).getName();
             if (jsonobj.isNull(colName))
             {
                 return null;
@@ -723,7 +723,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
         }
         else if (RelationType.isRelationMultiValued(relationType))
         {
-            String colName = mapping.getColumn(0).getIdentifier();
+            String colName = mapping.getColumn(0).getName();
             if (jsonobj.isNull(colName))
             {
                 return null;
