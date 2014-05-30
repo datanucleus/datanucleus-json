@@ -106,7 +106,7 @@ public class JsonStoreManager extends AbstractStoreManager
                     {
                         CompleteClassTable table = new CompleteClassTable(this, cmd, new SchemaVerifierImpl(this, cmd, clr));
                         sd = newStoreData(cmd, clr);
-                        sd.addProperty("tableObject", table);
+                        sd.setTable(table);
                         registerStoreData(sd);
                     }
                 }

@@ -85,7 +85,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             // Make sure schema exists, using this connection
             storeMgr.manageClasses(ec.getClassLoaderResolver(), new String[] {cmd.getFullClassName()});
         }
-        Table table = (Table) storeMgr.getStoreDataForClass(cmd.getFullClassName()).getProperty("tableObject");
+        Table table = storeMgr.getStoreDataForClass(cmd.getFullClassName()).getTable();
 
         Map<String,String> options = new HashMap<String,String>();
         options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(op));
@@ -213,7 +213,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             // Make sure schema exists, using this connection
             storeMgr.manageClasses(ec.getClassLoaderResolver(), new String[] {cmd.getFullClassName()});
         }
-        Table table = (Table) storeMgr.getStoreDataForClass(cmd.getFullClassName()).getProperty("tableObject");
+        Table table = storeMgr.getStoreDataForClass(cmd.getFullClassName()).getTable();
 
         Map<String,String> options = new HashMap<String,String>();
         options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(op));
@@ -433,7 +433,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         try
         {
             AbstractClassMetaData cmd = op.getClassMetaData();
-            Table table = (Table) storeMgr.getStoreDataForClass(cmd.getFullClassName()).getProperty("tableObject");
+            Table table = storeMgr.getStoreDataForClass(cmd.getFullClassName()).getTable();
             if (NucleusLogger.PERSISTENCE.isDebugEnabled())
             {
                 // Debug information about what we are retrieving
@@ -683,7 +683,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             URLConnection conn = (URLConnection) mconn.getConnection();
             ClassLoaderResolver clr = ec.getClassLoaderResolver();
             final AbstractClassMetaData cmd = ec.getMetaDataManager().getMetaDataForClass(candidateClass, clr);
-            final Table table = (Table) storeMgr.getStoreDataForClass(cmd.getFullClassName()).getProperty("tableObject");
+            final Table table = storeMgr.getStoreDataForClass(cmd.getFullClassName()).getTable();
 
             JSONArray jsonarray;
             try
@@ -835,7 +835,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
     protected String getURLPath(ObjectProvider op)
     {
         AbstractClassMetaData cmd = op.getClassMetaData();
-        Table table = (Table) storeMgr.getStoreDataForClass(cmd.getFullClassName()).getProperty("tableObject");
+        Table table = storeMgr.getStoreDataForClass(cmd.getFullClassName()).getTable();
         String url = getURLPath(cmd);
 
         if (cmd.getIdentityType() == IdentityType.DATASTORE)

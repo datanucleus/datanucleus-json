@@ -80,7 +80,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
             // Make sure schema exists, using this connection
             storeMgr.manageClasses(op.getExecutionContext().getClassLoaderResolver(), new String[] {cmd.getFullClassName()});
         }
-        Table table = (Table) storeMgr.getStoreDataForClass(cmd.getFullClassName()).getProperty("tableObject");
+        Table table = storeMgr.getStoreDataForClass(cmd.getFullClassName()).getTable();
 
         Map<String,String> options = new HashMap<String,String>();
         options.put(ConnectionFactoryImpl.STORE_JSON_URL, "/");
@@ -246,7 +246,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
             URLConnection conn = (URLConnection) mconn.getConnection();
             ClassLoaderResolver clr = ec.getClassLoaderResolver();
             final AbstractClassMetaData cmd = ec.getMetaDataManager().getMetaDataForClass(candidateClass, clr);
-            Table table = (Table) storeMgr.getStoreDataForClass(cmd.getFullClassName()).getProperty("tableObject");
+            Table table = storeMgr.getStoreDataForClass(cmd.getFullClassName()).getTable();
 
             JSONArray jsonarray;
             try
