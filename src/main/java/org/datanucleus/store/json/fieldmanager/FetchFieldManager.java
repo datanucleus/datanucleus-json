@@ -44,6 +44,7 @@ import org.datanucleus.state.ObjectProvider;
 import org.datanucleus.store.StoreManager;
 import org.datanucleus.store.fieldmanager.AbstractFetchFieldManager;
 import org.datanucleus.store.fieldmanager.FieldManager;
+import org.datanucleus.store.json.CloudStorageUtils;
 import org.datanucleus.store.schema.table.MemberColumnMapping;
 import org.datanucleus.store.schema.table.Table;
 import org.datanucleus.store.types.SCOUtils;
@@ -285,12 +286,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
         if (RelationType.isRelationSingleValued(relationType))
         {
             // Can be stored nested in the JSON doc, or flat
-            boolean nested = false;
-            String nestedStr = mmd.getValueForExtension("nested");
-            if (nestedStr != null && nestedStr.equalsIgnoreCase("true"))
-            {
-                nested = true;
-            }
+            boolean nested = CloudStorageUtils.isMemberNested(mmd);
 
             AbstractClassMetaData embCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
             List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>();

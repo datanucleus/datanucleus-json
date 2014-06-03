@@ -30,11 +30,24 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.datanucleus.exceptions.NucleusException;
+import org.datanucleus.metadata.AbstractMemberMetaData;
 
 public class CloudStorageUtils
 {
     private static final String UTF8_CHARSET = "UTF-8";
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
+
+    public static boolean isMemberNested(AbstractMemberMetaData mmd)
+    {
+        boolean nested = false;
+        String nestedStr = mmd.getValueForExtension("nested");
+        if (nestedStr != null && nestedStr.equalsIgnoreCase("" + (!nested)))
+        {
+            nested = !nested;
+        }
+
+        return nested;
+    }
 
     /**
      * Compile the HMAC of the data using the secret key

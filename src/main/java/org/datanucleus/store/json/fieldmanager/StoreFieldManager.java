@@ -38,6 +38,7 @@ import org.datanucleus.metadata.MetaDataUtils;
 import org.datanucleus.metadata.RelationType;
 import org.datanucleus.state.ObjectProvider;
 import org.datanucleus.store.fieldmanager.AbstractStoreFieldManager;
+import org.datanucleus.store.json.CloudStorageUtils;
 import org.datanucleus.store.schema.table.MemberColumnMapping;
 import org.datanucleus.store.schema.table.Table;
 import org.datanucleus.store.types.converters.TypeConverter;
@@ -284,12 +285,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
         if (RelationType.isRelationSingleValued(relationType))
         {
             // Embedded PC : Can be stored nested in the JSON doc, or flat
-            boolean nested = false;
-            String nestedStr = mmd.getValueForExtension("nested");
-            if (nestedStr != null && nestedStr.equalsIgnoreCase("true"))
-            {
-                nested = true;
-            }
+            boolean nested = CloudStorageUtils.isMemberNested(mmd);
 
             AbstractClassMetaData embCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
             if (nested)
