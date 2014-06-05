@@ -129,7 +129,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
             }            
             else if (code >= 400)
             {
-                StringBuffer sb = new StringBuffer();
+                StringBuilder sb = new StringBuilder();
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 byte[] buffer = new byte[1024];
                 int r;
@@ -272,7 +272,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                 }
                 handleHTTPErrorCode(http);
 
-                StringBuffer sb = new StringBuffer();
+                StringBuilder sb = new StringBuilder();
                 if (http.getContentLength() > 0)
                 {
                     for (int i = 0; i < http.getContentLength(); i++)

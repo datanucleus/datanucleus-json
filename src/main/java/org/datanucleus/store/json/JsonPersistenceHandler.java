@@ -275,7 +275,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             long startTime = System.currentTimeMillis();
             if (NucleusLogger.DATASTORE_PERSIST.isDebugEnabled())
             {
-                StringBuffer fieldStr = new StringBuffer();
+                StringBuilder fieldStr = new StringBuilder();
                 for (int i=0;i<fieldNumbers.length;i++)
                 {
                     if (i > 0)
@@ -437,7 +437,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             if (NucleusLogger.PERSISTENCE.isDebugEnabled())
             {
                 // Debug information about what we are retrieving
-                StringBuffer str = new StringBuffer("Fetching object \"");
+                StringBuilder str = new StringBuilder("Fetching object \"");
                 str.append(op.getObjectAsPrintable()).append("\" (id=");
                 str.append(op.getInternalObjectId()).append(")").append(" fields [");
                 for (int i=0;i<fieldNumbers.length;i++)
@@ -613,7 +613,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 throw new NucleusObjectNotFoundException();
             }
             /*String msg =*/ http.getResponseMessage();
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             if (http.getContentLength()>0)
             {
                 for (int i=0; i<http.getContentLength(); i++)
@@ -720,7 +720,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 }
 
                 /* String msg = */http.getResponseMessage();
-                StringBuffer sb = new StringBuffer();
+                StringBuilder sb = new StringBuilder();
                 if (http.getContentLength() > 0)
                 {
                     for (int i = 0; i < http.getContentLength(); i++)
@@ -896,7 +896,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
     {
         if (http.getResponseCode() >= 400)
         {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
             int r;
