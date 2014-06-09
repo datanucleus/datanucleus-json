@@ -39,13 +39,13 @@ import org.datanucleus.metadata.RelationType;
 import org.datanucleus.state.ObjectProvider;
 import org.datanucleus.store.fieldmanager.AbstractStoreFieldManager;
 import org.datanucleus.store.json.CloudStorageUtils;
+import org.datanucleus.store.json.orgjson.JSONException;
+import org.datanucleus.store.json.orgjson.JSONObject;
 import org.datanucleus.store.schema.table.MemberColumnMapping;
 import org.datanucleus.store.schema.table.Table;
 import org.datanucleus.store.types.converters.TypeConverter;
 import org.datanucleus.util.ClassUtils;
 import org.datanucleus.util.NucleusLogger;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * FieldManager for inserting data into the provided JSONObject from the ObjectProvider.

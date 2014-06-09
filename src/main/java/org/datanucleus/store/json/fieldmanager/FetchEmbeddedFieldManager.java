@@ -31,11 +31,11 @@ import org.datanucleus.metadata.RelationType;
 import org.datanucleus.state.ObjectProvider;
 import org.datanucleus.store.fieldmanager.FieldManager;
 import org.datanucleus.store.json.CloudStorageUtils;
+import org.datanucleus.store.json.orgjson.JSONException;
+import org.datanucleus.store.json.orgjson.JSONObject;
 import org.datanucleus.store.schema.table.MemberColumnMapping;
 import org.datanucleus.store.schema.table.Table;
 import org.datanucleus.util.NucleusLogger;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * FieldManager to handle the retrieval of information for an embedded persistable object from a JSON object.

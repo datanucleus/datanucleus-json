@@ -46,6 +46,9 @@ import org.datanucleus.store.StoreManager;
 import org.datanucleus.store.fieldmanager.AbstractFetchFieldManager;
 import org.datanucleus.store.fieldmanager.FieldManager;
 import org.datanucleus.store.json.CloudStorageUtils;
+import org.datanucleus.store.json.orgjson.JSONArray;
+import org.datanucleus.store.json.orgjson.JSONException;
+import org.datanucleus.store.json.orgjson.JSONObject;
 import org.datanucleus.store.schema.table.MemberColumnMapping;
 import org.datanucleus.store.schema.table.Table;
 import org.datanucleus.store.types.SCOUtils;
@@ -55,9 +58,6 @@ import org.datanucleus.store.types.converters.TypeConverterHelper;
 import org.datanucleus.util.ClassUtils;
 import org.datanucleus.util.NucleusLogger;
 import org.datanucleus.util.TypeConversionHelper;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * FieldManager for fetching from JSON.
@@ -704,11 +704,6 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             }
 
             String idStr = (String)jsonobj.get(colName);
-            if (idStr == null)
-            {
-                return null;
-            }
-
             Object obj = null;
             AbstractClassMetaData memberCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
             if (memberCmd.usesSingleFieldIdentityClass() && idStr.indexOf(':') > 0)

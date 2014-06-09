@@ -30,11 +30,11 @@ import org.datanucleus.metadata.MetaDataUtils;
 import org.datanucleus.metadata.RelationType;
 import org.datanucleus.state.ObjectProvider;
 import org.datanucleus.store.json.CloudStorageUtils;
+import org.datanucleus.store.json.orgjson.JSONException;
+import org.datanucleus.store.json.orgjson.JSONObject;
 import org.datanucleus.store.schema.table.MemberColumnMapping;
 import org.datanucleus.store.schema.table.Table;
 import org.datanucleus.util.NucleusLogger;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * FieldManager to handle the store information for an embedded persistable object into JSON.
