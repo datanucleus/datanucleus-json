@@ -314,15 +314,13 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                 embOP.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
                 return embOP.getObject();
             }
-            else
-            {
-                // Flat embedded. Stored as multiple properties in the owner object
-                // TODO Null detection
-                ObjectProvider embOP = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, op, fieldNumber);
-                FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embOP, jsonobj, embMmds, table);
-                embOP.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
-                return embOP.getObject();
-            }
+
+            // Flat embedded. Stored as multiple properties in the owner object
+            // TODO Null detection
+            ObjectProvider embOP = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, op, fieldNumber);
+            FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embOP, jsonobj, embMmds, table);
+            embOP.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
+            return embOP.getObject();
         }
         else if (RelationType.isRelationMultiValued(relationType))
         {
@@ -402,7 +400,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                         }
                         else if (colTypes[i] == double.class)
                         {
-                            Array.set(valuesArr, i, (double)jsonobj.getDouble(colName));
+                            Array.set(valuesArr, i, jsonobj.getDouble(colName));
                         }
                         else if (colTypes[i] == float.class)
                         {
@@ -431,267 +429,261 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     }
                     return memberValue;
                 }
-                else
-                {
-                    String colName = mapping.getColumn(0).getName();
-                    if (jsonobj.isNull(colName))
-                    {
-                        return null;
-                    }
 
-                    Class datastoreType = TypeConverterHelper.getDatastoreTypeForTypeConverter(conv, mmd.getType());
-                    if (datastoreType == String.class)
-                    {
-                        returnValue = conv.toMemberType(jsonobj.getString(colName));
-                    }
-                    else if (datastoreType == Boolean.class)
-                    {
-                        returnValue = conv.toMemberType(jsonobj.getBoolean(colName));
-                    }
-                    else if (datastoreType == Double.class)
-                    {
-                        returnValue = conv.toMemberType(jsonobj.getDouble(colName));
-                    }
-                    else if (datastoreType == Float.class)
-                    {
-                        returnValue = conv.toMemberType(jsonobj.getDouble(colName));
-                    }
-                    else if (datastoreType == Integer.class)
-                    {
-                        returnValue = conv.toMemberType(jsonobj.getInt(colName));
-                    }
-                    else if (datastoreType == Long.class)
-                    {
-                        returnValue = conv.toMemberType(jsonobj.getLong(colName));
-                    }
-                    // TODO Support Date types persisted using converter
-                    if (op != null)
-                    {
-                        returnValue = op.wrapSCOField(mmd.getAbsoluteFieldNumber(), returnValue, false, false, true);
-                    }
-                    return returnValue;
-                }
-            }
-            else
-            {
                 String colName = mapping.getColumn(0).getName();
                 if (jsonobj.isNull(colName))
                 {
                     return null;
                 }
 
-                if (Boolean.class.isAssignableFrom(mmd.getType()))
+                Class datastoreType = TypeConverterHelper.getDatastoreTypeForTypeConverter(conv, mmd.getType());
+                if (datastoreType == String.class)
                 {
-                    return jsonobj.getBoolean(colName);
+                    returnValue = conv.toMemberType(jsonobj.getString(colName));
                 }
-                else if (Integer.class.isAssignableFrom(mmd.getType()))
+                else if (datastoreType == Boolean.class)
                 {
-                    return jsonobj.getInt(colName);
+                    returnValue = conv.toMemberType(jsonobj.getBoolean(colName));
                 }
-                else if (Long.class.isAssignableFrom(mmd.getType()))
+                else if (datastoreType == Double.class)
                 {
-                    return jsonobj.getLong(colName);
+                    returnValue = conv.toMemberType(jsonobj.getDouble(colName));
                 }
-                else if (Double.class.isAssignableFrom(mmd.getType()))
+                else if (datastoreType == Float.class)
                 {
-                    return jsonobj.getDouble(colName);
+                    returnValue = conv.toMemberType(jsonobj.getDouble(colName));
                 }
-                else if (Enum.class.isAssignableFrom(mmd.getType()))
+                else if (datastoreType == Integer.class)
                 {
-                    if (MetaDataUtils.isJdbcTypeNumeric(mapping.getColumn(0).getJdbcType()))
+                    returnValue = conv.toMemberType(jsonobj.getInt(colName));
+                }
+                else if (datastoreType == Long.class)
+                {
+                    returnValue = conv.toMemberType(jsonobj.getLong(colName));
+                }
+                // TODO Support Date types persisted using converter
+                if (op != null)
+                {
+                    returnValue = op.wrapSCOField(mmd.getAbsoluteFieldNumber(), returnValue, false, false, true);
+                }
+                return returnValue;
+            }
+
+            String colName = mapping.getColumn(0).getName();
+            if (jsonobj.isNull(colName))
+            {
+                return null;
+            }
+
+            if (Boolean.class.isAssignableFrom(mmd.getType()))
+            {
+                return jsonobj.getBoolean(colName);
+            }
+            else if (Integer.class.isAssignableFrom(mmd.getType()))
+            {
+                return jsonobj.getInt(colName);
+            }
+            else if (Long.class.isAssignableFrom(mmd.getType()))
+            {
+                return jsonobj.getLong(colName);
+            }
+            else if (Double.class.isAssignableFrom(mmd.getType()))
+            {
+                return jsonobj.getDouble(colName);
+            }
+            else if (Enum.class.isAssignableFrom(mmd.getType()))
+            {
+                if (MetaDataUtils.isJdbcTypeNumeric(mapping.getColumn(0).getJdbcType()))
+                {
+                    return mmd.getType().getEnumConstants()[jsonobj.getInt(colName)];
+                }
+
+                return Enum.valueOf(mmd.getType(), (String)jsonobj.get(colName));
+            }
+            else if (BigDecimal.class.isAssignableFrom(mmd.getType()) || BigInteger.class.isAssignableFrom(mmd.getType()))
+            {
+                return TypeConversionHelper.convertTo(jsonobj.get(colName), mmd.getType());
+            }
+            else if (Collection.class.isAssignableFrom(mmd.getType()))
+            {
+                // Collection<Non-PC>
+                Collection<Object> coll;
+                try
+                {
+                    Class instanceType = SCOUtils.getContainerInstanceType(mmd.getType(), mmd.getOrderMetaData() != null);
+                    coll = (Collection<Object>) instanceType.newInstance();
+                }
+                catch (Exception e)
+                {
+                    throw new NucleusDataStoreException(e.getMessage(), e);
+                }
+
+                JSONArray array = jsonobj.getJSONArray(colName);
+                Class elementCls = null;
+                if (mmd.getCollection() != null && mmd.getCollection().getElementType() != null)
+                {
+                    elementCls = clr.classForName(mmd.getCollection().getElementType());
+                }
+                for (int i=0; i<array.length(); i++)
+                {
+                    if (array.isNull(i))
                     {
-                        return mmd.getType().getEnumConstants()[jsonobj.getInt(colName)];
+                        coll.add(null);
                     }
                     else
                     {
-                        return Enum.valueOf(mmd.getType(), (String)jsonobj.get(colName));
-                    }
-                }
-                else if (BigDecimal.class.isAssignableFrom(mmd.getType()) || BigInteger.class.isAssignableFrom(mmd.getType()))
-                {
-                    return TypeConversionHelper.convertTo(jsonobj.get(colName), mmd.getType());
-                }
-                else if (Collection.class.isAssignableFrom(mmd.getType()))
-                {
-                    // Collection<Non-PC>
-                    Collection<Object> coll;
-                    try
-                    {
-                        Class instanceType = SCOUtils.getContainerInstanceType(mmd.getType(), mmd.getOrderMetaData() != null);
-                        coll = (Collection<Object>) instanceType.newInstance();
-                    }
-                    catch (Exception e)
-                    {
-                        throw new NucleusDataStoreException(e.getMessage(), e);
-                    }
-
-                    JSONArray array = jsonobj.getJSONArray(colName);
-                    Class elementCls = null;
-                    if (mmd.getCollection() != null && mmd.getCollection().getElementType() != null)
-                    {
-                        elementCls = clr.classForName(mmd.getCollection().getElementType());
-                    }
-                    for (int i=0; i<array.length(); i++)
-                    {
-                        if (array.isNull(i))
-                        {
-                            coll.add(null);
-                        }
-                        else
-                        {
-                            Object value = array.get(i);
-                            if (value instanceof JSONObject)
-                            {
-                                Class cls = clr.classForName(((JSONObject)value).getString("class"), true);
-                                coll.add(getNonpersistableObjectFromJSON((JSONObject)value, cls, clr));
-                            }
-                            else
-                            {
-                                if (elementCls != null)
-                                {
-                                    coll.add(TypeConversionHelper.convertTo(value, elementCls));
-                                }
-                                else
-                                {
-                                    coll.add(value);
-                                }
-                            }
-                        }
-                    }
-
-                    if (op != null)
-                    {
-                        op.wrapSCOField(mmd.getAbsoluteFieldNumber(), coll, false, false, true);
-                    }
-                    return coll;
-                }
-                else if (Map.class.isAssignableFrom(mmd.getType()))
-                {
-                    // Map<Non-PC, Non-PC>
-                    Map map;
-                    try
-                    {
-                        Class instanceType = SCOUtils.getContainerInstanceType(mmd.getType(), false);
-                        map = (Map) instanceType.newInstance();
-                    }
-                    catch (Exception e)
-                    {
-                        throw new NucleusDataStoreException(e.getMessage(), e);
-                    }
-
-                    JSONObject mapValue = jsonobj.getJSONObject(colName);
-                    Iterator keyIter = mapValue.keys();
-                    Class keyCls = null;
-                    if (mmd.getMap() != null && mmd.getMap().getKeyType() != null)
-                    {
-                        keyCls = clr.classForName(mmd.getMap().getKeyType());
-                    }
-                    Class valCls = null;
-                    if (mmd.getMap() != null && mmd.getMap().getValueType() != null)
-                    {
-                        valCls = clr.classForName(mmd.getMap().getValueType());
-                    }
-
-                    while (keyIter.hasNext())
-                    {
-                        Object jsonKey = keyIter.next();
-
-                        Object key = jsonKey;
-                        if (keyCls != null)
-                        {
-                            key = TypeConversionHelper.convertTo(jsonKey, keyCls);
-                        }
-
-                        Object jsonVal = mapValue.get((String)key);
-                        Object val = jsonVal;
-                        if (jsonVal instanceof JSONObject)
-                        {
-                            Class cls = clr.classForName(((JSONObject)jsonVal).getString("class"), true);
-                            val = getNonpersistableObjectFromJSON((JSONObject)jsonVal, cls, clr);
-                        }
-                        else
-                        {
-                            if (valCls != null)
-                            {
-                                val = TypeConversionHelper.convertTo(jsonVal, valCls);
-                            }
-                        }
-                        map.put(key, val);
-                    }
-
-                    if (op != null)
-                    {
-                        op.wrapSCOField(mmd.getAbsoluteFieldNumber(), map, false, false, true);
-                    }
-                    return map;
-                }
-                else if (mmd.getType().isArray())
-                {
-                    // Non-PC[]
-                    JSONArray arrayJson = jsonobj.getJSONArray(colName);
-                    Object array = Array.newInstance(mmd.getType().getComponentType(), arrayJson.length());
-                    for (int i=0; i<arrayJson.length(); i++)
-                    {
-                        if (arrayJson.isNull(i))
-                        {
-                            Array.set(array, i, null);
-                        }
-                        else
-                        {
-                            Object value = arrayJson.get(i);
-                            if (value instanceof JSONObject)
-                            {
-                                JSONObject valueJson = (JSONObject)value;
-                                Class valueCls = clr.classForName(valueJson.getString("class"));
-                                Array.set(array, i, getNonpersistableObjectFromJSON((JSONObject)value, valueCls, clr));
-                            }
-                            else
-                            {
-                                Array.set(array, i, TypeConversionHelper.convertTo(value, mmd.getType().getComponentType()));
-                            }
-                        }
-                    }
-                    return array;
-                }
-                else
-                {
-                    // Fallback to built-in type converters
-                    boolean useLong = MetaDataUtils.isJdbcTypeNumeric(mapping.getColumn(0).getJdbcType());
-                    TypeConverter strConv = ec.getNucleusContext().getTypeManager().getTypeConverterForType(mmd.getType(), String.class);
-                    TypeConverter longConv = ec.getNucleusContext().getTypeManager().getTypeConverterForType(mmd.getType(), Long.class);
-
-                    if (useLong && longConv != null)
-                    {
-                        returnValue = longConv.toMemberType(jsonobj.getLong(colName));
-                    }
-                    else if (!useLong && strConv != null)
-                    {
-                        returnValue = strConv.toMemberType((String)jsonobj.get(colName));
-                    }
-                    else if (!useLong && longConv != null)
-                    {
-                        returnValue = longConv.toMemberType(jsonobj.getLong(colName));
-                    }
-                    else
-                    {
-                        Object value = jsonobj.get(colName);
+                        Object value = array.get(i);
                         if (value instanceof JSONObject)
                         {
                             Class cls = clr.classForName(((JSONObject)value).getString("class"), true);
-                            returnValue = getNonpersistableObjectFromJSON((JSONObject)value, cls, clr);
+                            coll.add(getNonpersistableObjectFromJSON((JSONObject)value, cls, clr));
                         }
                         else
                         {
-                            returnValue = TypeConversionHelper.convertTo(jsonobj.get(colName), mmd.getType());
+                            if (elementCls != null)
+                            {
+                                coll.add(TypeConversionHelper.convertTo(value, elementCls));
+                            }
+                            else
+                            {
+                                coll.add(value);
+                            }
                         }
                     }
-
-                    if (op != null)
-                    {
-                        op.wrapSCOField(mmd.getAbsoluteFieldNumber(), returnValue, false, false, true);
-                    }
-                    return returnValue;
                 }
+
+                if (op != null)
+                {
+                    op.wrapSCOField(mmd.getAbsoluteFieldNumber(), coll, false, false, true);
+                }
+                return coll;
+            }
+            else if (Map.class.isAssignableFrom(mmd.getType()))
+            {
+                // Map<Non-PC, Non-PC>
+                Map map;
+                try
+                {
+                    Class instanceType = SCOUtils.getContainerInstanceType(mmd.getType(), false);
+                    map = (Map) instanceType.newInstance();
+                }
+                catch (Exception e)
+                {
+                    throw new NucleusDataStoreException(e.getMessage(), e);
+                }
+
+                JSONObject mapValue = jsonobj.getJSONObject(colName);
+                Iterator keyIter = mapValue.keys();
+                Class keyCls = null;
+                if (mmd.getMap() != null && mmd.getMap().getKeyType() != null)
+                {
+                    keyCls = clr.classForName(mmd.getMap().getKeyType());
+                }
+                Class valCls = null;
+                if (mmd.getMap() != null && mmd.getMap().getValueType() != null)
+                {
+                    valCls = clr.classForName(mmd.getMap().getValueType());
+                }
+
+                while (keyIter.hasNext())
+                {
+                    Object jsonKey = keyIter.next();
+
+                    Object key = jsonKey;
+                    if (keyCls != null)
+                    {
+                        key = TypeConversionHelper.convertTo(jsonKey, keyCls);
+                    }
+
+                    Object jsonVal = mapValue.get((String)key);
+                    Object val = jsonVal;
+                    if (jsonVal instanceof JSONObject)
+                    {
+                        Class cls = clr.classForName(((JSONObject)jsonVal).getString("class"), true);
+                        val = getNonpersistableObjectFromJSON((JSONObject)jsonVal, cls, clr);
+                    }
+                    else
+                    {
+                        if (valCls != null)
+                        {
+                            val = TypeConversionHelper.convertTo(jsonVal, valCls);
+                        }
+                    }
+                    map.put(key, val);
+                }
+
+                if (op != null)
+                {
+                    op.wrapSCOField(mmd.getAbsoluteFieldNumber(), map, false, false, true);
+                }
+                return map;
+            }
+            else if (mmd.getType().isArray())
+            {
+                // Non-PC[]
+                JSONArray arrayJson = jsonobj.getJSONArray(colName);
+                Object array = Array.newInstance(mmd.getType().getComponentType(), arrayJson.length());
+                for (int i=0; i<arrayJson.length(); i++)
+                {
+                    if (arrayJson.isNull(i))
+                    {
+                        Array.set(array, i, null);
+                    }
+                    else
+                    {
+                        Object value = arrayJson.get(i);
+                        if (value instanceof JSONObject)
+                        {
+                            JSONObject valueJson = (JSONObject)value;
+                            Class valueCls = clr.classForName(valueJson.getString("class"));
+                            Array.set(array, i, getNonpersistableObjectFromJSON((JSONObject)value, valueCls, clr));
+                        }
+                        else
+                        {
+                            Array.set(array, i, TypeConversionHelper.convertTo(value, mmd.getType().getComponentType()));
+                        }
+                    }
+                }
+                return array;
+            }
+            else
+            {
+                // Fallback to built-in type converters
+                boolean useLong = MetaDataUtils.isJdbcTypeNumeric(mapping.getColumn(0).getJdbcType());
+                TypeConverter strConv = ec.getNucleusContext().getTypeManager().getTypeConverterForType(mmd.getType(), String.class);
+                TypeConverter longConv = ec.getNucleusContext().getTypeManager().getTypeConverterForType(mmd.getType(), Long.class);
+
+                if (useLong && longConv != null)
+                {
+                    returnValue = longConv.toMemberType(jsonobj.getLong(colName));
+                }
+                else if (!useLong && strConv != null)
+                {
+                    returnValue = strConv.toMemberType(jsonobj.get(colName));
+                }
+                else if (!useLong && longConv != null)
+                {
+                    returnValue = longConv.toMemberType(jsonobj.getLong(colName));
+                }
+                else
+                {
+                    Object value = jsonobj.get(colName);
+                    if (value instanceof JSONObject)
+                    {
+                        Class cls = clr.classForName(((JSONObject)value).getString("class"), true);
+                        returnValue = getNonpersistableObjectFromJSON((JSONObject)value, cls, clr);
+                    }
+                    else
+                    {
+                        returnValue = TypeConversionHelper.convertTo(jsonobj.get(colName), mmd.getType());
+                    }
+                }
+
+                if (op != null)
+                {
+                    op.wrapSCOField(mmd.getAbsoluteFieldNumber(), returnValue, false, false, true);
+                }
+                return returnValue;
             }
         }
         else if (RelationType.isRelationSingleValued(relationType))
@@ -1002,29 +994,23 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     return ClassUtils.getMethodForClass(keyFactory, "createKey", 
                         new Class[]{cls,String.class,String.class}).invoke(null, new Object[]{parent,kind,appId});
                 }
-                else
-                {
-                    return ClassUtils.getMethodForClass(keyFactory, "createKey",
-                        new Class[]{String.class,String.class}).invoke(null, new Object[]{kind,appId});
-                }
+
+                return ClassUtils.getMethodForClass(keyFactory, "createKey",
+                    new Class[]{String.class,String.class}).invoke(null, new Object[]{kind,appId});
             }
-            else
+
+            long id = jsonobj.getLong("id");
+            String kind = jsonobj.getString("kind");
+            Class keyFactory = clr.classForName("com.google.appengine.api.datastore.KeyFactory",
+                cls.getClassLoader(), false);
+            if (parent != null)
             {
-                long id = jsonobj.getLong("id");
-                String kind = jsonobj.getString("kind");
-                Class keyFactory = clr.classForName("com.google.appengine.api.datastore.KeyFactory",
-                    cls.getClassLoader(), false);
-                if (parent != null)
-                {
-                    return ClassUtils.getMethodForClass(keyFactory, "createKey",
-                        new Class[]{cls, String.class, long.class}).invoke(null, new Object[]{parent,kind,Long.valueOf(id)});
-                }
-                else
-                {
-                    return ClassUtils.getMethodForClass(keyFactory, "createKey", 
-                        new Class[]{String.class, long.class}).invoke(null, new Object[]{kind,Long.valueOf(id)});
-                }
+                return ClassUtils.getMethodForClass(keyFactory, "createKey",
+                    new Class[]{cls, String.class, long.class}).invoke(null, new Object[]{parent,kind,Long.valueOf(id)});
             }
+
+            return ClassUtils.getMethodForClass(keyFactory, "createKey", 
+                new Class[]{String.class, long.class}).invoke(null, new Object[]{kind,Long.valueOf(id)});
         }
         catch (Exception e)
         {

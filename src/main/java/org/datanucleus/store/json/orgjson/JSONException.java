@@ -7,6 +7,7 @@ package org.datanucleus.store.json.orgjson;
  */
 public class JSONException extends Exception
 {
+    private static final long serialVersionUID = -1475438336449433698L;
     private Throwable cause;
 
     /**
@@ -24,7 +25,7 @@ public class JSONException extends Exception
         this.cause = t;
     }
 
-    public Throwable getCause()
+    public synchronized Throwable getCause()
     {
         return this.cause;
     }

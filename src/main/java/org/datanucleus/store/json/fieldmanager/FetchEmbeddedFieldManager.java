@@ -128,14 +128,12 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
                 embOP.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
                 return embOP.getObject();
             }
-            else
-            {
-                // Flat embedded. Stored as multiple properties in the owner object
-                ObjectProvider embOP = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, op, fieldNumber);
-                FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embOP, jsonobj, embMmds, table);
-                embOP.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
-                return embOP.getObject();
-            }
+
+            // Flat embedded. Stored as multiple properties in the owner object
+            ObjectProvider embOP = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, op, fieldNumber);
+            FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embOP, jsonobj, embMmds, table);
+            embOP.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
+            return embOP.getObject();
         }
         else if (RelationType.isRelationMultiValued(relationType))
         {

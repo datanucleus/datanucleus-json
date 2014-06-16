@@ -92,7 +92,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
         try
         {
-            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), (boolean)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), value);
         }
         catch (JSONException e)
         {
@@ -109,7 +109,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
         try
         {
-            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), (int)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), value);
         }
         catch (JSONException e)
         {
@@ -143,7 +143,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
         try
         {
-            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), (double)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), value);
         }
         catch (JSONException e)
         {
@@ -160,7 +160,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
         try
         {
-            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), (double)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), value);
         }
         catch (JSONException e)
         {
@@ -177,7 +177,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
         try
         {
-            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), (int)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), value);
         }
         catch (JSONException e)
         {
@@ -194,7 +194,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
         try
         {
-            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), (long)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), value);
         }
         catch (JSONException e)
         {
@@ -211,7 +211,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
         try
         {
-            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), (int)value);
+            jsonobj.put(getColumnMapping(fieldNumber).getColumn(0).getName(), value);
         }
         catch (JSONException e)
         {
@@ -298,61 +298,57 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                     jsonobj.put(name, JSONObject.NULL);
                     return;
                 }
-                else
-                {
-                    // Nested embedded object in JSON object
-                    JSONObject embobj = new JSONObject();
 
-                    List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>();
-                    embMmds.add(mmd);
-                    ObjectProvider embOP = ec.findObjectProviderForEmbedded(value, op, mmd);
-                    StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(embOP, embobj, insert, embMmds, table);
-                    embOP.provideFields(embCmd.getAllMemberPositions(), storeEmbFM);
-                    NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED. This is experimental : " + embobj);
+                // Nested embedded object in JSON object
+                JSONObject embobj = new JSONObject();
 
-                    MemberColumnMapping mapping = getColumnMapping(fieldNumber); // TODO Update CompleteClassTable so that this has a mapping
-                    String name = (mapping != null ? mapping.getColumn(0).getName() : mmd.getName());
-                    jsonobj.put(name, embobj);
-                    return;
-                }
-            }
-            else
-            {
-                // Flat embedded. Store as multiple properties in the owner object
-                int[] embMmdPosns = embCmd.getAllMemberPositions();
                 List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>();
                 embMmds.add(mmd);
-                if (value == null)
-                {
-                    // Store null in all columns for the embedded (and nested embedded) object(s)
-                    StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(ec, embCmd, jsonobj, insert, embMmds, table);
-                    for (int i=0;i<embMmdPosns.length;i++)
-                    {
-                        AbstractMemberMetaData embMmd = embCmd.getMetaDataForManagedMemberAtAbsolutePosition(embMmdPosns[i]);
-                        if (String.class.isAssignableFrom(embMmd.getType()) || embMmd.getType().isPrimitive() || ClassUtils.isPrimitiveWrapperType(mmd.getTypeName()))
-                        {
-                            // Store a null for any primitive/wrapper/String fields
-                            List<AbstractMemberMetaData> colEmbMmds = new ArrayList<AbstractMemberMetaData>(embMmds);
-                            colEmbMmds.add(embMmd);
-                            MemberColumnMapping mapping = table.getMemberColumnMappingForEmbeddedMember(colEmbMmds);
-                            for (int j=0;j<mapping.getNumberOfColumns();j++)
-                            {
-                                jsonobj.put(mapping.getColumn(j).getName(), JSONObject.NULL);
-                            }
-                        }
-                        else if (Object.class.isAssignableFrom(embMmd.getType()))
-                        {
-                            storeEmbFM.storeObjectField(embMmdPosns[i], null);
-                        }
-                    }
-                    return;
-                }
-
                 ObjectProvider embOP = ec.findObjectProviderForEmbedded(value, op, mmd);
-                StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(embOP, jsonobj, insert, embMmds, table);
-                embOP.provideFields(embMmdPosns, storeEmbFM);
+                StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(embOP, embobj, insert, embMmds, table);
+                embOP.provideFields(embCmd.getAllMemberPositions(), storeEmbFM);
+                NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED. This is experimental : " + embobj);
+
+                MemberColumnMapping mapping = getColumnMapping(fieldNumber); // TODO Update CompleteClassTable so that this has a mapping
+                String name = (mapping != null ? mapping.getColumn(0).getName() : mmd.getName());
+                jsonobj.put(name, embobj);
                 return;
             }
+
+            // Flat embedded. Store as multiple properties in the owner object
+            int[] embMmdPosns = embCmd.getAllMemberPositions();
+            List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>();
+            embMmds.add(mmd);
+            if (value == null)
+            {
+                // Store null in all columns for the embedded (and nested embedded) object(s)
+                StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(ec, embCmd, jsonobj, insert, embMmds, table);
+                for (int i=0;i<embMmdPosns.length;i++)
+                {
+                    AbstractMemberMetaData embMmd = embCmd.getMetaDataForManagedMemberAtAbsolutePosition(embMmdPosns[i]);
+                    if (String.class.isAssignableFrom(embMmd.getType()) || embMmd.getType().isPrimitive() || ClassUtils.isPrimitiveWrapperType(mmd.getTypeName()))
+                    {
+                        // Store a null for any primitive/wrapper/String fields
+                        List<AbstractMemberMetaData> colEmbMmds = new ArrayList<AbstractMemberMetaData>(embMmds);
+                        colEmbMmds.add(embMmd);
+                        MemberColumnMapping mapping = table.getMemberColumnMappingForEmbeddedMember(colEmbMmds);
+                        for (int j=0;j<mapping.getNumberOfColumns();j++)
+                        {
+                            jsonobj.put(mapping.getColumn(j).getName(), JSONObject.NULL);
+                        }
+                    }
+                    else if (Object.class.isAssignableFrom(embMmd.getType()))
+                    {
+                        storeEmbFM.storeObjectField(embMmdPosns[i], null);
+                    }
+                }
+                return;
+            }
+
+            ObjectProvider embOP = ec.findObjectProviderForEmbedded(value, op, mmd);
+            StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(embOP, jsonobj, insert, embMmds, table);
+            embOP.provideFields(embMmdPosns, storeEmbFM);
+            return;
         }
         else if (RelationType.isRelationMultiValued(relationType))
         {
