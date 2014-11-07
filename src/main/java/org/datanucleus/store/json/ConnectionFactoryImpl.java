@@ -43,11 +43,11 @@ public class ConnectionFactoryImpl extends AbstractConnectionFactory
     /**
      * Constructor.
      * @param storeMgr Store Manager
-     * @param resourceType Type of resource (tx, nontx)
+     * @param resourceName Name of resource (tx, nontx)
      */
-    public ConnectionFactoryImpl(StoreManager storeMgr, String resourceType)
+    public ConnectionFactoryImpl(StoreManager storeMgr, String resourceName)
     {
-        super(storeMgr, resourceType);
+        super(storeMgr, resourceName);
     }
 
     /**
