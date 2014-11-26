@@ -425,7 +425,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     Object memberValue = conv.toMemberType(valuesArr);
                     if (op != null && memberValue != null)
                     {
-                        memberValue = op.wrapSCOField(fieldNumber, memberValue, false, false, true);
+                        memberValue = SCOUtils.wrapSCOField(op, fieldNumber, memberValue, false, false, true);
                     }
                     return memberValue;
                 }
@@ -464,7 +464,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                 // TODO Support Date types persisted using converter
                 if (op != null)
                 {
-                    returnValue = op.wrapSCOField(mmd.getAbsoluteFieldNumber(), returnValue, false, false, true);
+                    returnValue = SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), returnValue, false, false, true);
                 }
                 return returnValue;
             }
@@ -554,7 +554,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
                 if (op != null)
                 {
-                    op.wrapSCOField(mmd.getAbsoluteFieldNumber(), coll, false, false, true);
+                    SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), coll, false, false, true);
                 }
                 return coll;
             }
@@ -614,7 +614,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
                 if (op != null)
                 {
-                    op.wrapSCOField(mmd.getAbsoluteFieldNumber(), map, false, false, true);
+                    SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), map, false, false, true);
                 }
                 return map;
             }
@@ -681,7 +681,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
                 if (op != null)
                 {
-                    op.wrapSCOField(mmd.getAbsoluteFieldNumber(), returnValue, false, false, true);
+                    SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), returnValue, false, false, true);
                 }
                 return returnValue;
             }
@@ -754,7 +754,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
                 if (op != null)
                 {
-                    return op.wrapSCOField(mmd.getAbsoluteFieldNumber(), coll, false, false, true);
+                    return SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), coll, false, false, true);
                 }
                 return coll;
             }
@@ -785,7 +785,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
                 if (op != null)
                 {
-                    return op.wrapSCOField(mmd.getAbsoluteFieldNumber(), arrayField, false, false, true);
+                    return SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), arrayField, false, false, true);
                 }
                 return arrayField;
             }
@@ -861,7 +861,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
                 if (op != null)
                 {
-                    return op.wrapSCOField(mmd.getAbsoluteFieldNumber(), map, false, false, true);
+                    return SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), map, false, false, true);
                 }
                 return map;
             }
