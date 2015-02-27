@@ -93,11 +93,6 @@ public class JsonStoreManager extends AbstractStoreManager
             ClassMetaData cmd = (ClassMetaData)iter.next();
             if (cmd.getPersistenceModifier() == ClassPersistenceModifier.PERSISTENCE_CAPABLE && !cmd.isEmbeddedOnly())
             {
-                if (cmd.isAbstract())
-                {
-                    continue;
-                }
-
                 if (!storeDataMgr.managesClass(cmd.getFullClassName()))
                 {
                     // Make sure we have the appropriate "Table" object registered
