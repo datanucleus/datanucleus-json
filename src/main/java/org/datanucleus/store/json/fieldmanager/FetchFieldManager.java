@@ -34,6 +34,7 @@ import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ExecutionContext;
 import org.datanucleus.exceptions.NucleusDataStoreException;
 import org.datanucleus.exceptions.NucleusException;
+import org.datanucleus.exceptions.NucleusObjectNotFoundException;
 import org.datanucleus.exceptions.NucleusUserException;
 import org.datanucleus.identity.IdentityUtils;
 import org.datanucleus.metadata.AbstractClassMetaData;
@@ -698,17 +699,25 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             String idStr = (String)jsonobj.get(colName);
             Object obj = null;
             AbstractClassMetaData memberCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
-            if (memberCmd.usesSingleFieldIdentityClass() && idStr.indexOf(':') > 0)
+            try
             {
-                // Uses persistent identity
-                obj = IdentityUtils.getObjectFromPersistableIdentity(idStr, memberCmd, ec);
+                if (memberCmd.usesSingleFieldIdentityClass() && idStr.indexOf(':') > 0)
+                {
+                    // Uses persistent identity
+                    obj = IdentityUtils.getObjectFromPersistableIdentity(idStr, memberCmd, ec);
+                }
+                else
+                {
+                    // Uses legacy identity
+                    obj = IdentityUtils.getObjectFromIdString(idStr, memberCmd, ec, true);
+                }
+                return obj;
             }
-            else
+            catch (NucleusObjectNotFoundException nfe)
             {
-                // Uses legacy identity
-                obj = IdentityUtils.getObjectFromIdString(idStr, memberCmd, ec, true);
+                NucleusLogger.GENERAL.warn("Object=" + op + " field=" + mmd.getFullFieldName() + " has id=" + idStr + " but could not instantiate object with that identity");
+                return null;
             }
-            return obj;
         }
         else if (RelationType.isRelationMultiValued(relationType))
         {
@@ -733,61 +742,99 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     throw new NucleusDataStoreException(e.getMessage(), e);
                 }
 
-                AbstractClassMetaData elementCmd = mmd.getCollection().getElementClassMetaData(
-                    ec.getClassLoaderResolver(), ec.getMetaDataManager());
+                boolean changeDetected = false;
+                AbstractClassMetaData elementCmd = mmd.getCollection().getElementClassMetaData(ec.getClassLoaderResolver(), ec.getMetaDataManager());
                 for (int i=0;i<array.length();i++)
                 {
                     String idStr = (String)array.get(i);
-                    Object element = null;
-                    if (elementCmd.usesSingleFieldIdentityClass() && idStr.indexOf(':') > 0)
+                    try
                     {
-                        // Uses persistent identity
-                        element = IdentityUtils.getObjectFromPersistableIdentity(idStr, elementCmd, ec);
+                        Object element = null;
+                        if (elementCmd.usesSingleFieldIdentityClass() && idStr.indexOf(':') > 0)
+                        {
+                            // Uses persistent identity
+                            element = IdentityUtils.getObjectFromPersistableIdentity(idStr, elementCmd, ec);
+                        }
+                        else
+                        {
+                            // Uses legacy identity
+                            element = IdentityUtils.getObjectFromIdString(idStr, elementCmd, ec, true);
+                        }
+                        coll.add(element);
                     }
-                    else
+                    catch (NucleusObjectNotFoundException nfe)
                     {
-                        // Uses legacy identity
-                        element = IdentityUtils.getObjectFromIdString(idStr, elementCmd, ec, true);
+                        // Object no longer exists. Deleted by user? so ignore
+                        changeDetected = true;
                     }
-                    coll.add(element);
                 }
 
                 if (op != null)
                 {
-                    return SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), coll, true);
+                    coll = (Collection) SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), coll, true);
+                    if (changeDetected)
+                    {
+                        op.makeDirty(mmd.getAbsoluteFieldNumber());
+                    }
                 }
                 return coll;
             }
             else if (mmd.hasArray())
             {
                 // PC[]
-                JSONArray array = (JSONArray)jsonobj.get(colName);
-                Object arrayField = Array.newInstance(mmd.getType().getComponentType(), array.length());
+                JSONArray jsonArr = (JSONArray)jsonobj.get(colName);
+                Object array = Array.newInstance(mmd.getType().getComponentType(), jsonArr.length());
 
-                AbstractClassMetaData elementCmd = mmd.getCollection().getElementClassMetaData(
-                    ec.getClassLoaderResolver(), ec.getMetaDataManager());
-                for (int i=0;i<array.length();i++)
+                boolean changeDetected = false;
+                int pos = 0;
+                AbstractClassMetaData elementCmd = mmd.getCollection().getElementClassMetaData(ec.getClassLoaderResolver(), ec.getMetaDataManager());
+                for (int i=0;i<jsonArr.length();i++)
                 {
-                    String idStr = (String)array.get(i);
-                    Object element = null;
-                    if (elementCmd.usesSingleFieldIdentityClass() && idStr.indexOf(':') > 0)
+                    try
                     {
-                        // Uses persistent identity
-                        element = IdentityUtils.getObjectFromPersistableIdentity(idStr, elementCmd, ec);
+                        String idStr = (String)jsonArr.get(i);
+                        Object element = null;
+                        if (elementCmd.usesSingleFieldIdentityClass() && idStr.indexOf(':') > 0)
+                        {
+                            // Uses persistent identity
+                            element = IdentityUtils.getObjectFromPersistableIdentity(idStr, elementCmd, ec);
+                        }
+                        else
+                        {
+                            // Uses legacy identity
+                            element = IdentityUtils.getObjectFromIdString(idStr, elementCmd, ec, true);
+                        }
+                        Array.set(array, pos++, element);
                     }
-                    else
+                    catch (NucleusObjectNotFoundException nfe)
                     {
-                        // Uses legacy identity
-                        element = IdentityUtils.getObjectFromIdString(idStr, elementCmd, ec, true);
+                        // Object no longer exists. Deleted by user? so ignore
+                        changeDetected = true;
                     }
-                    Array.set(arrayField, i, element);
                 }
 
-                if (op != null)
+                if (changeDetected)
                 {
-                    return SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), arrayField, true);
+                    if (pos < Array.getLength(array))
+                    {
+                        // Some elements not found, so resize the array
+                        Object arrayOld = array;
+                        array = Array.newInstance(mmd.getType().getComponentType(), pos);
+                        for (int j = 0; j < pos; j++)
+                        {
+                            Array.set(array, j, Array.get(arrayOld, j));
+                        }
+                    }
+                    if (op != null)
+                    {
+                        array = SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), array, true);
+                        if (changeDetected)
+                        {
+                            op.makeDirty(mmd.getAbsoluteFieldNumber());
+                        }
+                    }
                 }
-                return arrayField;
+                return array;
             }
             else if (mmd.hasMap())
             {
@@ -807,24 +854,36 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                 AbstractClassMetaData keyCmd = mmd.getMap().getKeyClassMetaData(clr, ec.getMetaDataManager());
                 AbstractClassMetaData valCmd = mmd.getMap().getValueClassMetaData(clr, ec.getMetaDataManager());
 
+                boolean changeDetected = false;
                 Iterator keyIter = mapVal.keys();
                 while (keyIter.hasNext())
                 {
+                    boolean keySet = true;
+                    boolean valSet = true;
                     Object jsonKey = keyIter.next();
                     Object key = null;
                     if (keyCmd != null)
                     {
-                        // The jsonKey is the string form of the identity
-                        String idStr = (String)jsonKey;
-                        if (keyCmd.usesSingleFieldIdentityClass() && idStr.indexOf(':') > 0)
+                        try
                         {
-                            // Uses persistent identity
-                            key = IdentityUtils.getObjectFromPersistableIdentity(idStr, keyCmd, ec);
+                            // The jsonKey is the string form of the identity
+                            String idStr = (String)jsonKey;
+                            if (keyCmd.usesSingleFieldIdentityClass() && idStr.indexOf(':') > 0)
+                            {
+                                // Uses persistent identity
+                                key = IdentityUtils.getObjectFromPersistableIdentity(idStr, keyCmd, ec);
+                            }
+                            else
+                            {
+                                // Uses legacy identity
+                                key = IdentityUtils.getObjectFromIdString(idStr, keyCmd, ec, true);
+                            }
                         }
-                        else
+                        catch (NucleusObjectNotFoundException nfe)
                         {
-                            // Uses legacy identity
-                            key = IdentityUtils.getObjectFromIdString(idStr, keyCmd, ec, true);
+                            // Object no longer exists. Deleted by user? so ignore
+                            changeDetected = true;
+                            keySet = false;
                         }
                     }
                     else
@@ -837,17 +896,26 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     Object val = null;
                     if (valCmd != null)
                     {
-                        // The jsonVal is the string form of the identity
-                        String idStr = (String)jsonVal;
-                        if (valCmd.usesSingleFieldIdentityClass() && idStr.indexOf(':') > 0)
+                        try
                         {
-                            // Uses persistent identity
-                            val = IdentityUtils.getObjectFromPersistableIdentity(idStr, valCmd, ec);
+                            // The jsonVal is the string form of the identity
+                            String idStr = (String)jsonVal;
+                            if (valCmd.usesSingleFieldIdentityClass() && idStr.indexOf(':') > 0)
+                            {
+                                // Uses persistent identity
+                                val = IdentityUtils.getObjectFromPersistableIdentity(idStr, valCmd, ec);
+                            }
+                            else
+                            {
+                                // Uses legacy identity
+                                val = IdentityUtils.getObjectFromIdString(idStr, valCmd, ec, true);
+                            }
                         }
-                        else
+                        catch (NucleusObjectNotFoundException nfe)
                         {
-                            // Uses legacy identity
-                            val = IdentityUtils.getObjectFromIdString(idStr, valCmd, ec, true);
+                            // Object no longer exists. Deleted by user? so ignore
+                            changeDetected = true;
+                            valSet = false;
                         }
                     }
                     else
@@ -856,12 +924,19 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                         val = TypeConversionHelper.convertTo(jsonVal, valCls);
                     }
 
-                    map.put(key, val);
+                    if (keySet && valSet)
+                    {
+                        map.put(key, val);
+                    }
                 }
 
                 if (op != null)
                 {
-                    return SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), map, true);
+                    map = (Map) SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), map, true);
+                    if (changeDetected)
+                    {
+                        op.makeDirty(mmd.getAbsoluteFieldNumber());
+                    }
                 }
                 return map;
             }
