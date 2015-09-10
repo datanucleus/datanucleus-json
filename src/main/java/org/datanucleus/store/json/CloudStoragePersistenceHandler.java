@@ -108,13 +108,16 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                 NucleusLogger.DATASTORE.debug("Creating bucket. ");
             }
             HttpURLConnection http = (HttpURLConnection)conn;
-            Iterator iterator = headers.keySet().iterator();
-            while(iterator.hasNext())
+
+            Iterator<Map.Entry<String, String>> iterator = headers.entrySet().iterator();
+            while (iterator.hasNext())
             {
-                String key = (String) iterator.next();
-                String value = (String) headers.get(key);
+                Map.Entry<String, String> entry = iterator.next();
+                String key = entry.getKey();
+                String value = entry.getValue();
                 http.setRequestProperty(key, value);
             }
+
             http.setRequestProperty("Content-Length", "0");
             http.setDoOutput(true);
             http.setRequestMethod("PUT");
@@ -221,7 +224,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
         }
         catch (MalformedURLException e)
         {
-            e.printStackTrace();
+            NucleusLogger.DATASTORE.error("Exception thrown getting header : ", e);
         }
         return headers;
     }    
@@ -252,14 +255,16 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
             try
             {                
                 HttpURLConnection http = (HttpURLConnection) conn;
-                Map headers = getHeaders("GET", options);
-                Iterator iterator = headers.keySet().iterator();
+
+                Iterator<Map.Entry<String, String>> iterator = getHeaders("GET", options).entrySet().iterator();
                 while (iterator.hasNext())
                 {
-                    String key = (String) iterator.next();
-                    String value = (String) headers.get(key);
+                    Map.Entry<String, String> entry = iterator.next();
+                    String key = entry.getKey();
+                    String value = entry.getValue();
                     http.setRequestProperty(key, value);
                 }
+
                 http.setDoInput(true);
                 http.setRequestMethod("GET");
                 http.setReadTimeout(10000);
@@ -393,7 +398,8 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
         }
         catch (JSONException je)
         {
-            je.printStackTrace();
+            // TODO Throw this
+            NucleusLogger.DATASTORE.error("Exception thrown getting objects of type : ", je);
         }
 
         return results;
