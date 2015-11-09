@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>datanucleus-json</artifactId>
-    <version>4.1.2-SNAPSHOT</version>
+    <version>5.0.0-m1-SNAPSHOT</version>
 
     <name>DataNucleus JSON plugin</name>
     <description>
@@ -18,7 +18,7 @@
     </description>
 
     <properties>
-        <dn.core.version>4.1.0-release</dn.core.version>
+        <dn.core.version>5.0.0-m1-SNAPSHOT</dn.core.version>
     </properties>
 
     <scm>
