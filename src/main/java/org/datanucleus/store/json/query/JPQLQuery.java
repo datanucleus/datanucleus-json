@@ -110,12 +110,12 @@ public class JPQLQuery extends AbstractJPQLQuery
                 NucleusLogger.QUERY.debug(Localiser.msg("021074", "JPQL", "" + (System.currentTimeMillis() - startTime)));
             }
 
-            if (type == BULK_DELETE)
+            if (type == QueryType.BULK_DELETE)
             {
                 ec.deleteObjects(results.toArray());
                 return Long.valueOf(results.size());
             }
-            else if (type == BULK_UPDATE)
+            else if (type == QueryType.BULK_UPDATE)
             {
                 throw new NucleusException("Bulk Update is not yet supported");
             }
