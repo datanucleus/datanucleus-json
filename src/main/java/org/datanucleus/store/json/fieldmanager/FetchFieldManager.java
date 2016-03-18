@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ExecutionContext;
@@ -334,6 +335,16 @@ public class FetchFieldManager extends AbstractFetchFieldManager
     protected Object fetchObjectFieldInternal(int fieldNumber, AbstractMemberMetaData mmd, ClassLoaderResolver clr, RelationType relationType)
     throws JSONException
     {
+        boolean optional = false;
+        if (Optional.class.isAssignableFrom(mmd.getType()))
+        {
+            if (relationType != RelationType.NONE)
+            {
+                relationType = RelationType.ONE_TO_ONE_UNI;
+            }
+            optional = true;
+        }
+
         MemberColumnMapping mapping = getColumnMapping(fieldNumber);
         if (relationType == RelationType.NONE)
         {
@@ -471,47 +482,61 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             }
 
             String colName = mapping.getColumn(0).getName();
+            Class type = optional ? clr.classForName(mmd.getCollection().getElementType()) : mmd.getType();
             if (jsonobj.isNull(colName))
             {
-                return null;
+                return optional ? Optional.empty() : null;
             }
-
-            if (Boolean.class.isAssignableFrom(mmd.getType()))
+            else if (Boolean.class.isAssignableFrom(type))
             {
-                return jsonobj.getBoolean(colName);
+                boolean val = jsonobj.getBoolean(colName);
+                return optional ? Optional.of(val) : val;
             }
-            else if (Integer.class.isAssignableFrom(mmd.getType()))
+            else if (Integer.class.isAssignableFrom(type))
             {
-                return jsonobj.getInt(colName);
+                int val = jsonobj.getInt(colName);
+                return optional ? Optional.of(val) : val;
             }
-            else if (Long.class.isAssignableFrom(mmd.getType()))
+            else if (Long.class.isAssignableFrom(type))
             {
-                return jsonobj.getLong(colName);
+                long val = jsonobj.getLong(colName);
+                return optional ? Optional.of(val) : val;
             }
-            else if (Double.class.isAssignableFrom(mmd.getType()))
+            else if (Double.class.isAssignableFrom(type))
             {
-                return jsonobj.getDouble(colName);
+                double val = jsonobj.getDouble(colName);
+                return optional ? Optional.of(val) : val;
             }
-            else if (Enum.class.isAssignableFrom(mmd.getType()))
+            else if (String.class.isAssignableFrom(type))
             {
+                String val = (String)jsonobj.get(colName);
+                return optional ? Optional.of(val) : val;
+            }
+            else if (Enum.class.isAssignableFrom(type))
+            {
+                Object val = null;
                 if (MetaDataUtils.isJdbcTypeNumeric(mapping.getColumn(0).getJdbcType()))
                 {
-                    return mmd.getType().getEnumConstants()[jsonobj.getInt(colName)];
+                    val = type.getEnumConstants()[jsonobj.getInt(colName)];
                 }
-
-                return Enum.valueOf(mmd.getType(), (String)jsonobj.get(colName));
+                else
+                {
+                    val = Enum.valueOf(type, (String)jsonobj.get(colName));
+                }
+                return optional ? Optional.of(val) : val;
             }
-            else if (BigDecimal.class.isAssignableFrom(mmd.getType()) || BigInteger.class.isAssignableFrom(mmd.getType()))
+            else if (BigDecimal.class.isAssignableFrom(type) || BigInteger.class.isAssignableFrom(type))
             {
-                return TypeConversionHelper.convertTo(jsonobj.get(colName), mmd.getType());
+                Object val = TypeConversionHelper.convertTo(jsonobj.get(colName), type);
+                return optional ? Optional.of(val) : val;
             }
-            else if (Collection.class.isAssignableFrom(mmd.getType()))
+            else if (Collection.class.isAssignableFrom(type))
             {
                 // Collection<Non-PC>
                 Collection<Object> coll;
                 try
                 {
-                    Class instanceType = SCOUtils.getContainerInstanceType(mmd.getType(), mmd.getOrderMetaData() != null);
+                    Class instanceType = SCOUtils.getContainerInstanceType(type, mmd.getOrderMetaData() != null);
                     coll = (Collection<Object>) instanceType.newInstance();
                 }
                 catch (Exception e)
@@ -552,12 +577,9 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                         }
                     }
                 }
+                Object val = optional ? (coll == null ? Optional.empty() : Optional.of(coll)) : coll;
 
-                if (op != null)
-                {
-                    SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), coll, true);
-                }
-                return coll;
+                return op!=null ? SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), val, true) : val;
             }
             else if (Map.class.isAssignableFrom(mmd.getType()))
             {
@@ -693,12 +715,13 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             String colName = mapping.getColumn(0).getName();
             if (jsonobj.isNull(colName))
             {
-                return null;
+                return optional ? Optional.empty() : null;
             }
 
             String idStr = (String)jsonobj.get(colName);
             Object obj = null;
-            AbstractClassMetaData memberCmd = ec.getMetaDataManager().getMetaDataForClass(mmd.getType(), clr);
+            Class memberType = optional ? clr.classForName(mmd.getCollection().getElementType()) : mmd.getType();
+            AbstractClassMetaData memberCmd = ec.getMetaDataManager().getMetaDataForClass(memberType, clr);
             try
             {
                 if (memberCmd.usesSingleFieldIdentityClass() && idStr.indexOf(':') > 0)
@@ -711,12 +734,12 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     // Uses legacy identity
                     obj = IdentityUtils.getObjectFromIdString(idStr, memberCmd, ec, true);
                 }
-                return obj;
+                return optional ? Optional.of(obj) : obj;
             }
             catch (NucleusObjectNotFoundException nfe)
             {
                 NucleusLogger.GENERAL.warn("Object=" + op + " field=" + mmd.getFullFieldName() + " has id=" + idStr + " but could not instantiate object with that identity");
-                return null;
+                return optional ? Optional.empty() : null;
             }
         }
         else if (RelationType.isRelationMultiValued(relationType))

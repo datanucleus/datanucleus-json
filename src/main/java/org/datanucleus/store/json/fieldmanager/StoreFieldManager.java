@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ExecutionContext;
@@ -378,6 +379,24 @@ public class StoreFieldManager extends AbstractStoreFieldManager
         MemberColumnMapping mapping = getColumnMapping(fieldNumber);
         String name = mapping.getColumn(0).getName();
 
+        if (value instanceof Optional)
+        {
+            if (relationType != RelationType.NONE)
+            {
+                relationType = RelationType.ONE_TO_ONE_UNI;
+            }
+
+            Optional opt = (Optional)value;
+            if (opt.isPresent())
+            {
+                value = opt.get();
+            }
+            else
+            {
+                value = null;
+            }
+        }
+
         if (relationType == RelationType.NONE)
         {
             if (mapping.getTypeConverter() != null)
@@ -434,6 +453,10 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 else if (value instanceof Double)
                 {
                     jsonobj.put(name, ((Double)value).doubleValue());
+                }
+                else if (value instanceof String)
+                {
+                    jsonobj.put(name, value);
                 }
                 else if (value instanceof Enum)
                 {
