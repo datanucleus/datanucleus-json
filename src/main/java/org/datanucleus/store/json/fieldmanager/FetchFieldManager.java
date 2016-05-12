@@ -43,6 +43,7 @@ import org.datanucleus.metadata.AbstractMemberMetaData;
 import org.datanucleus.metadata.FieldPersistenceModifier;
 import org.datanucleus.metadata.MetaDataUtils;
 import org.datanucleus.metadata.RelationType;
+import org.datanucleus.query.QueryUtils;
 import org.datanucleus.state.ObjectProvider;
 import org.datanucleus.store.StoreManager;
 import org.datanucleus.store.fieldmanager.AbstractFetchFieldManager;
@@ -789,6 +790,18 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     {
                         // Object no longer exists. Deleted by user? so ignore
                         changeDetected = true;
+                    }
+                }
+
+                if (coll instanceof List && mmd.getOrderMetaData() != null && mmd.getOrderMetaData().getOrdering() != null && !mmd.getOrderMetaData().getOrdering().equals("#PK"))
+                {
+                    // Reorder the collection as per the ordering clause
+                    Collection newColl = QueryUtils.orderCandidates((List)coll, clr.classForName(mmd.getCollection().getElementType()), mmd.getOrderMetaData().getOrdering(), ec, clr);
+                    if (newColl.getClass() != coll.getClass())
+                    {
+                        // Type has changed, so just reuse the input
+                        coll.clear();
+                        coll.addAll(newColl);
                     }
                 }
 
