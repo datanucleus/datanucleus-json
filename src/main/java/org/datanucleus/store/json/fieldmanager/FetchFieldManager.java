@@ -41,6 +41,8 @@ import org.datanucleus.identity.IdentityUtils;
 import org.datanucleus.metadata.AbstractClassMetaData;
 import org.datanucleus.metadata.AbstractMemberMetaData;
 import org.datanucleus.metadata.FieldPersistenceModifier;
+import org.datanucleus.metadata.FieldRole;
+import org.datanucleus.metadata.JdbcType;
 import org.datanucleus.metadata.MetaDataUtils;
 import org.datanucleus.metadata.RelationType;
 import org.datanucleus.query.QueryUtils;
@@ -515,16 +517,18 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             }
             else if (Enum.class.isAssignableFrom(type))
             {
-                Object val = null;
-                if (MetaDataUtils.isJdbcTypeNumeric(mapping.getColumn(0).getJdbcType()))
+                JdbcType jdbcType = TypeConversionHelper.getJdbcTypeForEnum(mmd, FieldRole.ROLE_FIELD, clr);
+                Object datastoreValue = null;
+                if (MetaDataUtils.isJdbcTypeNumeric(jdbcType))
                 {
-                    val = type.getEnumConstants()[jsonobj.getInt(colName)];
+                    datastoreValue = jsonobj.getInt(colName);
                 }
                 else
                 {
-                    val = Enum.valueOf(type, (String)jsonobj.get(colName));
+                    datastoreValue = jsonobj.get(colName);
                 }
-                return optional ? Optional.of(val) : val;
+                datastoreValue = TypeConversionHelper.getEnumForStoredValue(mmd, FieldRole.ROLE_FIELD, datastoreValue, clr);
+                return optional ? Optional.of(datastoreValue) : datastoreValue;
             }
             else if (BigDecimal.class.isAssignableFrom(type) || BigInteger.class.isAssignableFrom(type))
             {

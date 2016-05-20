@@ -35,6 +35,7 @@ import org.datanucleus.exceptions.NucleusUserException;
 import org.datanucleus.identity.IdentityUtils;
 import org.datanucleus.metadata.AbstractClassMetaData;
 import org.datanucleus.metadata.AbstractMemberMetaData;
+import org.datanucleus.metadata.FieldRole;
 import org.datanucleus.metadata.MetaDataUtils;
 import org.datanucleus.metadata.RelationType;
 import org.datanucleus.state.ObjectProvider;
@@ -49,6 +50,7 @@ import org.datanucleus.store.types.converters.TypeConverter;
 import org.datanucleus.util.ClassUtils;
 import org.datanucleus.util.Localiser;
 import org.datanucleus.util.NucleusLogger;
+import org.datanucleus.util.TypeConversionHelper;
 
 /**
  * FieldManager for inserting data into the provided JSONObject from the ObjectProvider.
@@ -460,14 +462,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 }
                 else if (value instanceof Enum)
                 {
-                    if (MetaDataUtils.isJdbcTypeNumeric(mapping.getColumn(0).getJdbcType()))
-                    {
-                        jsonobj.put(name, ((Enum)value).ordinal());
-                    }
-                    else
-                    {
-                        jsonobj.put(name, ((Enum)value).name());
-                    }
+                    jsonobj.put(name, TypeConversionHelper.getStoredValueFromEnum(mmd, FieldRole.ROLE_FIELD, (Enum) value));
                 }
                 else if (value instanceof BigDecimal)
                 {
