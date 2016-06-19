@@ -27,8 +27,8 @@ import java.util.Properties;
 
 import org.datanucleus.ExecutionContext;
 import org.datanucleus.metadata.AbstractClassMetaData;
-import org.datanucleus.query.evaluator.JDOQLEvaluator;
-import org.datanucleus.query.evaluator.JavaQueryEvaluator;
+import org.datanucleus.query.inmemory.JDOQLInMemoryEvaluator;
+import org.datanucleus.query.inmemory.JavaQueryInMemoryEvaluator;
 import org.datanucleus.store.StoreManager;
 import org.datanucleus.store.connection.ManagedConnection;
 import org.datanucleus.store.json.ConnectionFactoryImpl;
@@ -101,7 +101,7 @@ public class JDOQLQuery extends AbstractJDOQLQuery
                 candidates = new ArrayList(candidateCollection);
             }
 
-            JavaQueryEvaluator resultMapper = new JDOQLEvaluator(this, candidates, compilation,
+            JavaQueryInMemoryEvaluator resultMapper = new JDOQLInMemoryEvaluator(this, candidates, compilation,
                 parameters, ec.getClassLoaderResolver());
             Collection results = resultMapper.execute(true, true, true, true, true);
 
