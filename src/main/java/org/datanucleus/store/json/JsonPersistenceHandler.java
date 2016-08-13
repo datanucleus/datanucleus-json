@@ -119,7 +119,16 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             if (cmd.isVersioned())
             {
                 VersionMetaData vermd = cmd.getVersionMetaDataForClass();
-                String memberName = table.getVersionColumn().getName(); // TODO Version stored in field?
+                String verColName = null;
+                if (vermd.getFieldName() != null)
+                {
+                    verColName = table.getMemberColumnMappingForMember(cmd.getMetaDataForMember(vermd.getFieldName())).getColumn(0).getName();
+                }
+                else
+                {
+                    verColName = table.getVersionColumn().getName(); // TODO Version stored in field?
+                }
+
                 if (vermd.getVersionStrategy() == VersionStrategy.VERSION_NUMBER)
                 {
                     long versionNumber = 1;
@@ -131,7 +140,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                     }
                     try
                     {
-                        jsonobj.put(memberName, versionNumber);
+                        jsonobj.put(verColName, versionNumber);
                     }
                     catch (JSONException e)
                     {
@@ -164,7 +173,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                     }
                     try
                     {
-                        jsonobj.put(memberName, ts.getTime());
+                        jsonobj.put(verColName, ts.getTime());
                     }
                     catch (JSONException e)
                     {
@@ -292,7 +301,17 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             if (cmd.isVersioned())
             {
                 VersionMetaData vermd = cmd.getVersionMetaDataForClass();
-                String memberName = table.getVersionColumn().getName(); // TODO Version stored in field?
+                String verColName = null;
+                if (vermd.getFieldName() != null)
+                {
+                    verColName = table.getMemberColumnMappingForMember(cmd.getMetaDataForMember(vermd.getFieldName())).getColumn(0).getName();
+                }
+                else
+                {
+                    // Surrogate version
+                    verColName = table.getVersionColumn().getName();
+                }
+
                 if (vermd.getVersionStrategy() == VersionStrategy.VERSION_NUMBER)
                 {
                     if (NucleusLogger.DATASTORE.isDebugEnabled())
@@ -302,7 +321,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                     }
                     try
                     {
-                        jsonobj.put(memberName, nextVersion);
+                        jsonobj.put(verColName, nextVersion);
                     }
                     catch (JSONException e)
                     {
@@ -311,18 +330,18 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 }
                 else if (vermd.getVersionStrategy() == VersionStrategy.DATE_TIME)
                 {
-                    op.setTransactionalVersion(nextVersion);
                     if (NucleusLogger.DATASTORE.isDebugEnabled())
                     {
                         NucleusLogger.DATASTORE.debug(Localiser.msg("JSON.Insert.ObjectPersistedWithVersion", StringUtils.toJVMIDString(op.getObject()),
                             op.getInternalObjectId(), "" + nextVersion));
                     }
+
                     Timestamp ts = (Timestamp) nextVersion;
                     Date date = new Date();
                     date.setTime(ts.getTime());
                     try
                     {
-                        jsonobj.put(memberName, ts.getTime());
+                        jsonobj.put(verColName, ts.getTime());
                     }
                     catch (JSONException e)
                     {
@@ -784,11 +803,21 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 {
                     // Extract the version for applying to the object
                     VersionMetaData vermd = cmd.getVersionMetaDataForClass();
-                    String memberName = table.getVersionColumn().getName();
+                    String verColName = null;
+                    if (vermd.getFieldName() == null)
+                    {
+                        // Surrogate version
+                        verColName = table.getVersionColumn().getName();
+                    }
+                    else
+                    {
+                        verColName = table.getMemberColumnMappingForMember(cmd.getMetaDataForMember(vermd.getFieldName())).getColumn(0).getName();
+                    }
+
                     long versionLong = -1;
                     try
                     {
-                        versionLong = json.getLong(memberName);
+                        versionLong = json.getLong(verColName);
                         if (vermd.getVersionStrategy() == VersionStrategy.VERSION_NUMBER)
                         {
                             version = versionLong;
