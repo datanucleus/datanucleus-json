@@ -76,7 +76,7 @@ public class ConnectionFactoryImpl extends AbstractConnectionFactory
 
         public void close()
         {
-            // TODO Auto-generated method stub
+            super.close();
         }
 
         public Object getConnection()
