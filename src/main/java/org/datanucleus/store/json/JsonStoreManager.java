@@ -75,6 +75,7 @@ public class JsonStoreManager extends AbstractStoreManager
         set.add(StoreManager.OPTION_ORM_EMBEDDED_PC_NESTED);
         set.add(StoreManager.OPTION_QUERY_JDOQL_BULK_DELETE);
         set.add(StoreManager.OPTION_QUERY_JPQL_BULK_DELETE);
+        set.add(StoreManager.OPTION_ORM_INHERITANCE_COMPLETE_TABLE);
         return set;
     }
 
