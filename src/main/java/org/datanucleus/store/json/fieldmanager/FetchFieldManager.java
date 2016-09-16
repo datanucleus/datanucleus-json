@@ -771,7 +771,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                 }
 
                 boolean changeDetected = false;
-                AbstractClassMetaData elementCmd = mmd.getCollection().getElementClassMetaData(ec.getClassLoaderResolver(), ec.getMetaDataManager());
+                AbstractClassMetaData elementCmd = mmd.getCollection().getElementClassMetaData(ec.getClassLoaderResolver());
                 for (int i=0;i<array.length();i++)
                 {
                     String idStr = (String)array.get(i);
@@ -827,7 +827,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
                 boolean changeDetected = false;
                 int pos = 0;
-                AbstractClassMetaData elementCmd = mmd.getCollection().getElementClassMetaData(ec.getClassLoaderResolver(), ec.getMetaDataManager());
+                AbstractClassMetaData elementCmd = mmd.getCollection().getElementClassMetaData(ec.getClassLoaderResolver());
                 for (int i=0;i<jsonArr.length();i++)
                 {
                     try
@@ -891,8 +891,8 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     throw new NucleusDataStoreException(e.getMessage(), e);
                 }
 
-                AbstractClassMetaData keyCmd = mmd.getMap().getKeyClassMetaData(clr, ec.getMetaDataManager());
-                AbstractClassMetaData valCmd = mmd.getMap().getValueClassMetaData(clr, ec.getMetaDataManager());
+                AbstractClassMetaData keyCmd = mmd.getMap().getKeyClassMetaData(clr);
+                AbstractClassMetaData valCmd = mmd.getMap().getValueClassMetaData(clr);
 
                 boolean changeDetected = false;
                 Iterator keyIter = mapVal.keys();
