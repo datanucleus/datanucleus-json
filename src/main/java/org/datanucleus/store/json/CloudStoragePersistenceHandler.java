@@ -55,6 +55,7 @@ import org.datanucleus.store.json.fieldmanager.StoreFieldManager;
 import org.datanucleus.store.json.orgjson.JSONArray;
 import org.datanucleus.store.json.orgjson.JSONException;
 import org.datanucleus.store.json.orgjson.JSONObject;
+import org.datanucleus.store.schema.table.SurrogateColumnType;
 import org.datanucleus.store.schema.table.Table;
 import org.datanucleus.util.NucleusLogger;
 import org.w3c.dom.Document;
@@ -363,7 +364,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                 final FieldManager fm = new FetchFieldManager(ec, cmd, json, table);
                 if (cmd.getIdentityType() == IdentityType.DATASTORE)
                 {
-                    String memberName = table.getDatastoreIdColumn().getName();
+                    String memberName = table.getSurrogateColumn(SurrogateColumnType.DATASTORE_ID).getName();
                     Object key = json.get(memberName);
                     if (key instanceof String)
                     {

@@ -56,6 +56,7 @@ import org.datanucleus.store.json.fieldmanager.StoreFieldManager;
 import org.datanucleus.store.json.orgjson.JSONArray;
 import org.datanucleus.store.json.orgjson.JSONException;
 import org.datanucleus.store.json.orgjson.JSONObject;
+import org.datanucleus.store.schema.table.SurrogateColumnType;
 import org.datanucleus.store.schema.table.Table;
 import org.datanucleus.util.Localiser;
 import org.datanucleus.util.NucleusLogger;
@@ -104,7 +105,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             JSONObject jsonobj = new JSONObject();
             if (cmd.getIdentityType() == IdentityType.DATASTORE)
             {
-                String memberName = table.getDatastoreIdColumn().getName();
+                String memberName = table.getSurrogateColumn(SurrogateColumnType.DATASTORE_ID).getName();
                 Object idKey = IdentityUtils.getTargetKeyForDatastoreIdentity(op.getInternalObjectId());
                 try
                 {
@@ -126,7 +127,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 }
                 else
                 {
-                    verColName = table.getVersionColumn().getName(); // TODO Version stored in field?
+                    verColName = table.getSurrogateColumn(SurrogateColumnType.VERSION).getName(); // TODO Version stored in field?
                 }
 
                 if (vermd.getVersionStrategy() == VersionStrategy.VERSION_NUMBER)
@@ -309,7 +310,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 else
                 {
                     // Surrogate version
-                    verColName = table.getVersionColumn().getName();
+                    verColName = table.getSurrogateColumn(SurrogateColumnType.VERSION).getName();
                 }
 
                 if (vermd.getVersionStrategy() == VersionStrategy.VERSION_NUMBER)
@@ -482,7 +483,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             JSONObject jsonobj = new JSONObject();
             if (cmd.getIdentityType() == IdentityType.DATASTORE)
             {
-                String memberName = table.getDatastoreIdColumn().getName();
+                String memberName = table.getSurrogateColumn(SurrogateColumnType.DATASTORE_ID).getName();
                 Object idKey = IdentityUtils.getTargetKeyForDatastoreIdentity(op.getInternalObjectId());
                 try
                 {
@@ -782,7 +783,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 Object id = null;
                 if (cmd.getIdentityType() == IdentityType.DATASTORE)
                 {
-                    String memberName = table.getDatastoreIdColumn().getName();
+                    String memberName = table.getSurrogateColumn(SurrogateColumnType.DATASTORE_ID).getName();
                     Object key = json.get(memberName);
                     if (key instanceof String)
                     {
@@ -807,7 +808,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                     if (vermd.getFieldName() == null)
                     {
                         // Surrogate version
-                        verColName = table.getVersionColumn().getName();
+                        verColName = table.getSurrogateColumn(SurrogateColumnType.VERSION).getName();
                     }
                     else
                     {
