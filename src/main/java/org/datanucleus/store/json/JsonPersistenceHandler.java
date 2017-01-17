@@ -48,7 +48,6 @@ import org.datanucleus.state.ObjectProvider;
 import org.datanucleus.store.AbstractPersistenceHandler;
 import org.datanucleus.store.FieldValues;
 import org.datanucleus.store.StoreManager;
-import org.datanucleus.store.VersionHelper;
 import org.datanucleus.store.connection.ManagedConnection;
 import org.datanucleus.store.fieldmanager.FieldManager;
 import org.datanucleus.store.json.fieldmanager.FetchFieldManager;
@@ -250,7 +249,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                         currentVersion = Long.valueOf(((Integer) currentVersion).longValue());
                     }
 
-                    nextVersion = VersionHelper.getNextVersion(vermd.getVersionStrategy(), currentVersion);
+                    nextVersion = ec.getNextVersion(vermd.getVersionStrategy(), currentVersion);
                     if (verMmd.getType() == Integer.class || verMmd.getType() == int.class)
                     {
                         // Cater for Integer-based versions TODO Generalise this
@@ -277,7 +276,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 else
                 {
                     // Surrogate version column
-                    nextVersion = VersionHelper.getNextVersion(vermd.getVersionStrategy(), currentVersion);
+                    nextVersion = ec.getNextVersion(vermd.getVersionStrategy(), currentVersion);
                 }
                 op.setTransactionalVersion(nextVersion);
             }
