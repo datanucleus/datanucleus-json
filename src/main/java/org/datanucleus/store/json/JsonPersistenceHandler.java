@@ -850,12 +850,15 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                         op.replaceFields(cmd.getAllMemberPositions(), fetchFM);
                     }
                 }, null, ignoreCache, false);
+                ObjectProvider op = ec.findObjectProvider(obj);
 
                 if (cmd.isVersioned() && version != null)
                 {
-                    ObjectProvider op = ec.findObjectProvider(obj);
                     op.setVersion(version);
                 }
+
+                // Any fields loaded above will not be wrapped since we did not have the ObjectProvider at the point of creating the FetchFieldManager, so wrap them now
+                op.replaceAllLoadedSCOFieldsWithWrappers();
 
                 results.add(obj);
             }

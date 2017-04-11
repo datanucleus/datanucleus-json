@@ -380,7 +380,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                     id = IdentityUtils.getApplicationIdentityForResultSetRow(ec, cmd, null, true, fm);
                 }
 
-                results.add(ec.findObject(id, new FieldValues()
+                Object pc = ec.findObject(id, new FieldValues()
                 {
                     public FetchPlan getFetchPlanForLoading()
                     {
@@ -394,7 +394,13 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                     {
                         op.replaceFields(cmd.getPKMemberPositions(), fm);
                     }
-                }, null, ignoreCache, false));
+                }, null, ignoreCache, false);
+                ObjectProvider op = ec.findObjectProvider(pc);
+
+                // Any fields loaded above will not be wrapped since we did not have the ObjectProvider at the point of creating the FetchFieldManager, so wrap them now
+                op.replaceAllLoadedSCOFieldsWithWrappers();
+
+                results.add(pc);
             }
         }
         catch (JSONException je)
