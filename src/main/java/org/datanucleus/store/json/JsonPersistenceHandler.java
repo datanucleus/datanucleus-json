@@ -249,7 +249,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                         currentVersion = Long.valueOf(((Integer) currentVersion).longValue());
                     }
 
-                    nextVersion = ec.getNextVersion(vermd, currentVersion);
+                    nextVersion = ec.getLockManager().getNextVersion(vermd, currentVersion);
                     if (verMmd.getType() == Integer.class || verMmd.getType() == int.class)
                     {
                         // Cater for Integer-based versions TODO Generalise this
@@ -276,7 +276,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 else
                 {
                     // Surrogate version column
-                    nextVersion = ec.getNextVersion(vermd, currentVersion);
+                    nextVersion = ec.getLockManager().getNextVersion(vermd, currentVersion);
                 }
                 op.setTransactionalVersion(nextVersion);
             }
