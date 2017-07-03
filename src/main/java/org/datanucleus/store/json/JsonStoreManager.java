@@ -51,7 +51,7 @@ public class JsonStoreManager extends AbstractStoreManager
         super("json", clr, ctx, props);
 
         persistenceHandler = new JsonPersistenceHandler(this);
-        connectionMgr.disableConnectionPool();
+        connectionMgr.disableConnectionCaching();
 
         logConfiguration();
     }

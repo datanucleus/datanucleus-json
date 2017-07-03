@@ -33,7 +33,7 @@ public class AmazonS3StoreManager extends AbstractStoreManager
 
         // Handler for persistence process
         persistenceHandler = new AmazonS3PersistenceHandler(this);
-        connectionMgr.disableConnectionPool();
+        connectionMgr.disableConnectionCaching();
 
         // See NUCJSON-16
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); 

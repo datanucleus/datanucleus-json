@@ -33,7 +33,7 @@ public class GoogleStorageStoreManager extends AbstractStoreManager
 
         // Handler for persistence process
         persistenceHandler = new GoogleStoragePersistenceHandler(this);
-        connectionMgr.disableConnectionPool();
+        connectionMgr.disableConnectionCaching();
 
         // See NUCJSON-16
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); 
