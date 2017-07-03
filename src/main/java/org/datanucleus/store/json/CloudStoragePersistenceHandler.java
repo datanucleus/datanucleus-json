@@ -85,13 +85,13 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
 
         Map<String,String> options = new HashMap<String,String>();
         options.put(ConnectionFactoryImpl.STORE_JSON_URL, "/");
-        ManagedConnection mconn = storeMgr.getConnection(op.getExecutionContext(), options);
+        ManagedConnection mconn = storeMgr.getConnectionManager().getConnection(op.getExecutionContext(), options);
         URLConnection conn = (URLConnection) mconn.getConnection();
         createBucket(conn, getHeaderForBucket());
 
         options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(op));
         options.put("Content-Type", "application/json");
-        mconn = storeMgr.getConnection(op.getExecutionContext(), options);
+        mconn = storeMgr.getConnectionManager().getConnection(op.getExecutionContext(), options);
         conn = (URLConnection) mconn.getConnection();
 
         JSONObject jsonobj = new JSONObject();

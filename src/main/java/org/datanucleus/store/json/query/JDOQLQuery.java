@@ -81,7 +81,7 @@ public class JDOQLQuery extends AbstractJDOQLQuery
         AbstractClassMetaData cmd = ec.getMetaDataManager().getMetaDataForClass(candidateClass, ec.getClassLoaderResolver());
         Properties options = new Properties();
         options.put(ConnectionFactoryImpl.STORE_JSON_URL, ((JsonPersistenceHandler)getStoreManager().getPersistenceHandler()).getURLPathForQuery(cmd));
-        ManagedConnection mconn = getStoreManager().getConnection(ec,options);
+        ManagedConnection mconn = getStoreManager().getConnectionManager().getConnection(ec,options);
         try
         {
             long startTime = System.currentTimeMillis();

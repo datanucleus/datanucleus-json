@@ -91,7 +91,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(op));
         options.put("Content-Type", "application/json");
 
-        ManagedConnection mconn = storeMgr.getConnection(ec, options);
+        ManagedConnection mconn = storeMgr.getConnectionManager().getConnection(ec, options);
         URLConnection conn = (URLConnection) mconn.getConnection();
         try
         {
@@ -228,7 +228,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(op));
         options.put("Content-Type", "application/json");
 
-        ManagedConnection mconn = storeMgr.getConnection(ec, options);
+        ManagedConnection mconn = storeMgr.getConnectionManager().getConnection(ec, options);
         URLConnection conn = (URLConnection) mconn.getConnection();
         try
         {
@@ -387,7 +387,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         Map<String, String> options = new HashMap<String, String>();
         options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(op));
         ExecutionContext ec = op.getExecutionContext();
-        ManagedConnection mconn = storeMgr.getConnection(ec, options);
+        ManagedConnection mconn = storeMgr.getConnectionManager().getConnection(ec, options);
         URLConnection conn = (URLConnection) mconn.getConnection();
         try
         {
@@ -448,7 +448,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         Map<String, String> options = new HashMap<String, String>();
         options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(op));
         ExecutionContext ec = op.getExecutionContext();
-        ManagedConnection mconn = storeMgr.getConnection(ec, options);
+        ManagedConnection mconn = storeMgr.getConnectionManager().getConnection(ec, options);
         URLConnection conn = (URLConnection) mconn.getConnection();
         try
         {
@@ -533,7 +533,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         Map<String, String> options = new HashMap<String, String>();
         options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(op));
         ExecutionContext ec = op.getExecutionContext();
-        ManagedConnection mconn = storeMgr.getConnection(ec, options);
+        ManagedConnection mconn = storeMgr.getConnectionManager().getConnection(ec, options);
         URLConnection conn = (URLConnection) mconn.getConnection();
 
         try
