@@ -13,15 +13,6 @@
         <connectionfactory name="googlestorage/tx" class-name="org.datanucleus.store.json.ConnectionFactoryImpl" datastore="googlestorage" transactional="true"/>
     </extension>
 
-    <extension point="org.datanucleus.store_query_query">
-        <query class-name="org.datanucleus.store.json.query.JDOQLQuery" datastore="json" name="JDOQL"/>
-        <query class-name="org.datanucleus.store.json.query.JPQLQuery" datastore="json" name="JPQL"/>
-        <query class-name="org.datanucleus.store.json.query.JDOQLQuery" datastore="amazons3" name="JDOQL"/>
-        <query class-name="org.datanucleus.store.json.query.JPQLQuery" datastore="amazons3" name="JPQL"/>
-        <query class-name="org.datanucleus.store.json.query.JDOQLQuery" datastore="googlestorage" name="JDOQL"/>
-        <query class-name="org.datanucleus.store.json.query.JPQLQuery" datastore="googlestorage" name="JPQL"/>
-    </extension>
-
     <extension point="org.datanucleus.persistence_properties">
         <persistence-property name="datanucleus.cloud.storage.bucket"/>
     </extension>

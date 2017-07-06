@@ -22,8 +22,12 @@ import java.util.Map;
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ExecutionContext;
 import org.datanucleus.PersistenceNucleusContext;
+import org.datanucleus.exceptions.NucleusException;
 import org.datanucleus.store.AbstractStoreManager;
 import org.datanucleus.store.NucleusConnection;
+import org.datanucleus.store.json.query.JDOQLQuery;
+import org.datanucleus.store.json.query.JPQLQuery;
+import org.datanucleus.store.query.Query;
 
 public class GoogleStorageStoreManager extends AbstractStoreManager
 {
@@ -39,6 +43,57 @@ public class GoogleStorageStoreManager extends AbstractStoreManager
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); 
 
         logConfiguration();
+    }
+
+    /* (non-Javadoc)
+     * @see org.datanucleus.store.StoreManager#newQuery(java.lang.String, org.datanucleus.ExecutionContext)
+     */
+    @Override
+    public Query newQuery(String language, ExecutionContext ec)
+    {
+        if (language.equalsIgnoreCase("JDOQL"))
+        {
+            return new JDOQLQuery(this, ec);
+        }
+        else if (language.equalsIgnoreCase("JPQL"))
+        {
+            return new JPQLQuery(this, ec);
+        }
+        throw new NucleusException("Error creating query for language " + language);
+    }
+
+    /* (non-Javadoc)
+     * @see org.datanucleus.store.StoreManager#newQuery(java.lang.String, org.datanucleus.ExecutionContext, java.lang.String)
+     */
+    @Override
+    public Query newQuery(String language, ExecutionContext ec, String queryString)
+    {
+        if (language.equalsIgnoreCase("JDOQL"))
+        {
+            return new JDOQLQuery(this, ec, queryString);
+        }
+        else if (language.equalsIgnoreCase("JPQL"))
+        {
+            return new JPQLQuery(this, ec, queryString);
+        }
+        throw new NucleusException("Error creating query for language " + language);
+    }
+
+    /* (non-Javadoc)
+     * @see org.datanucleus.store.StoreManager#newQuery(java.lang.String, org.datanucleus.ExecutionContext, org.datanucleus.store.query.Query)
+     */
+    @Override
+    public Query newQuery(String language, ExecutionContext ec, Query q)
+    {
+        if (language.equalsIgnoreCase("JDOQL"))
+        {
+            return new JDOQLQuery(this, ec, (JDOQLQuery) q);
+        }
+        else if (language.equalsIgnoreCase("JPQL"))
+        {
+            return new JPQLQuery(this, ec, (JPQLQuery) q);
+        }
+        throw new NucleusException("Error creating query for language " + language);
     }
 
     public NucleusConnection getNucleusConnection(ExecutionContext ec)
