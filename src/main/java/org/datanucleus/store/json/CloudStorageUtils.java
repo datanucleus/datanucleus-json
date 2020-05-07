@@ -22,6 +22,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -64,7 +65,7 @@ public class CloudStorageUtils
             Mac mac = Mac.getInstance(HMAC_SHA1_ALGORITHM);
             mac.init(secretKeySpec);
             byte[] rawHmac = mac.doFinal(data.getBytes(UTF8_CHARSET));
-            return new String(org.datanucleus.util.Base64.encode(rawHmac));
+            return Base64.getEncoder().encodeToString(rawHmac);
         }
         catch (UnsupportedEncodingException e)
         {
