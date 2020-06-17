@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>datanucleus-json</artifactId>
-    <version>5.2.1</version>
+    <version>5.2.2-SNAPSHOT</version>
 
     <name>DataNucleus JSON plugin</name>
     <description>
