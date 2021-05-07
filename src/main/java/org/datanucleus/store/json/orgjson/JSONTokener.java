@@ -401,7 +401,7 @@ public class JSONTokener
                 {
                     try
                     {
-                        return new Integer(Integer.parseInt(s, 8));
+                        return Integer.valueOf(Integer.parseInt(s, 8));
                     }
                     catch (Exception e)
                     {
@@ -411,7 +411,7 @@ public class JSONTokener
             }
             try
             {
-                return new Integer(s);
+                return Integer.valueOf(s);
             }
             catch (Exception e)
             {
