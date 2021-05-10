@@ -26,14 +26,14 @@ import java.util.Properties;
 import org.datanucleus.ExecutionContext;
 import org.datanucleus.exceptions.NucleusException;
 import org.datanucleus.metadata.AbstractClassMetaData;
-import org.datanucleus.query.inmemory.JPQLInMemoryEvaluator;
-import org.datanucleus.query.inmemory.JavaQueryInMemoryEvaluator;
 import org.datanucleus.store.StoreManager;
 import org.datanucleus.store.connection.ManagedConnection;
 import org.datanucleus.store.json.ConnectionFactoryImpl;
 import org.datanucleus.store.json.JsonPersistenceHandler;
 import org.datanucleus.store.query.AbstractJPQLQuery;
 import org.datanucleus.store.query.Query;
+import org.datanucleus.store.query.inmemory.JPQLInMemoryEvaluator;
+import org.datanucleus.store.query.inmemory.JavaQueryInMemoryEvaluator;
 import org.datanucleus.util.Localiser;
 import org.datanucleus.util.NucleusLogger;
 
