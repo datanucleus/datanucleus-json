@@ -57,6 +57,7 @@ import org.datanucleus.store.query.QueryUtils;
 import org.datanucleus.store.schema.table.MemberColumnMapping;
 import org.datanucleus.store.schema.table.Table;
 import org.datanucleus.store.types.SCOUtils;
+import org.datanucleus.store.types.converters.EnumConversionHelper;
 import org.datanucleus.store.types.converters.MultiColumnConverter;
 import org.datanucleus.store.types.converters.TypeConverter;
 import org.datanucleus.util.ClassUtils;
@@ -526,7 +527,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                 {
                     datastoreValue = jsonobj.get(colName);
                 }
-                datastoreValue = TypeConversionHelper.getEnumForStoredValue(mmd, FieldRole.ROLE_FIELD, datastoreValue, clr);
+                datastoreValue = EnumConversionHelper.getEnumForStoredValue(mmd, FieldRole.ROLE_FIELD, datastoreValue, clr);
                 return optional ? Optional.of(datastoreValue) : datastoreValue;
             }
             else if (BigDecimal.class.isAssignableFrom(type) || BigInteger.class.isAssignableFrom(type))

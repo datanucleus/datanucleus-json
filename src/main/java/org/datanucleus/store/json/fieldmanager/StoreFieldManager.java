@@ -46,11 +46,11 @@ import org.datanucleus.store.json.orgjson.JSONException;
 import org.datanucleus.store.json.orgjson.JSONObject;
 import org.datanucleus.store.schema.table.MemberColumnMapping;
 import org.datanucleus.store.schema.table.Table;
+import org.datanucleus.store.types.converters.EnumConversionHelper;
 import org.datanucleus.store.types.converters.TypeConverter;
 import org.datanucleus.util.ClassUtils;
 import org.datanucleus.util.Localiser;
 import org.datanucleus.util.NucleusLogger;
-import org.datanucleus.util.TypeConversionHelper;
 
 /**
  * FieldManager for inserting data into the provided JSONObject from the ObjectProvider.
@@ -462,7 +462,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 }
                 else if (value instanceof Enum)
                 {
-                    jsonobj.put(name, TypeConversionHelper.getStoredValueFromEnum(mmd, FieldRole.ROLE_FIELD, (Enum) value));
+                    jsonobj.put(name, EnumConversionHelper.getStoredValueFromEnum(mmd, FieldRole.ROLE_FIELD, (Enum) value));
                 }
                 else if (value instanceof BigDecimal)
                 {
