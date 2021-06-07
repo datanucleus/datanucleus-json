@@ -516,7 +516,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             }
             else if (Enum.class.isAssignableFrom(type))
             {
-                JdbcType jdbcType = TypeConversionHelper.getJdbcTypeForEnum(mmd, FieldRole.ROLE_FIELD, clr);
+                JdbcType jdbcType = MetaDataUtils.getJdbcTypeForEnum(mmd, FieldRole.ROLE_FIELD, clr);
                 Object datastoreValue = null;
                 if (MetaDataUtils.isJdbcTypeNumeric(jdbcType))
                 {
