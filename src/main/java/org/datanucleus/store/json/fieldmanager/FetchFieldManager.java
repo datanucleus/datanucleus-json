@@ -59,10 +59,10 @@ import org.datanucleus.store.schema.table.Table;
 import org.datanucleus.store.types.SCOUtils;
 import org.datanucleus.store.types.converters.EnumConversionHelper;
 import org.datanucleus.store.types.converters.MultiColumnConverter;
+import org.datanucleus.store.types.converters.TypeConversionHelper;
 import org.datanucleus.store.types.converters.TypeConverter;
 import org.datanucleus.util.ClassUtils;
 import org.datanucleus.util.NucleusLogger;
-import org.datanucleus.util.TypeConversionHelper;
 
 /**
  * FieldManager for fetching from JSON.
