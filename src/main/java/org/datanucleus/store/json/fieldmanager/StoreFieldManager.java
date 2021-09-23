@@ -67,9 +67,9 @@ public class StoreFieldManager extends AbstractStoreFieldManager
         this.table = table;
     }
 
-    public StoreFieldManager(ObjectProvider op, JSONObject jsonobj, boolean insert, Table table)
+    public StoreFieldManager(ObjectProvider sm, JSONObject jsonobj, boolean insert, Table table)
     {
-        super(op, insert);
+        super(sm, insert);
         this.table = table;
         this.jsonobj = jsonobj;
 

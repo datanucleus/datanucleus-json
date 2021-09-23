@@ -73,13 +73,13 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         // nothing to do
     }
 
-    public void insertObject(ObjectProvider op)
+    public void insertObject(ObjectProvider sm)
     {
         // Check if read-only so update not permitted
-        assertReadOnlyForUpdateOfObject(op);
+        assertReadOnlyForUpdateOfObject(sm);
 
-        ExecutionContext ec = op.getExecutionContext();
-        AbstractClassMetaData cmd = op.getClassMetaData();
+        ExecutionContext ec = sm.getExecutionContext();
+        AbstractClassMetaData cmd = sm.getClassMetaData();
         if (!storeMgr.managesClass(cmd.getFullClassName()))
         {
             // Make sure schema exists, using this connection
@@ -88,7 +88,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         Table table = storeMgr.getStoreDataForClass(cmd.getFullClassName()).getTable();
 
         Map<String, String> options = new HashMap<String, String>();
-        options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(op));
+        options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(sm));
         options.put("Content-Type", "application/json");
 
         ManagedConnection mconn = storeMgr.getConnectionManager().getConnection(ec, options);
@@ -98,14 +98,14 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             long startTime = System.currentTimeMillis();
             if (NucleusLogger.DATASTORE_PERSIST.isDebugEnabled())
             {
-                NucleusLogger.DATASTORE_PERSIST.debug(Localiser.msg("JSON.Insert.Start", op.getObjectAsPrintable(), op.getInternalObjectId()));
+                NucleusLogger.DATASTORE_PERSIST.debug(Localiser.msg("JSON.Insert.Start", sm.getObjectAsPrintable(), sm.getInternalObjectId()));
             }
 
             JSONObject jsonobj = new JSONObject();
             if (cmd.getIdentityType() == IdentityType.DATASTORE)
             {
                 String memberName = table.getSurrogateColumn(SurrogateColumnType.DATASTORE_ID).getName();
-                Object idKey = IdentityUtils.getTargetKeyForDatastoreIdentity(op.getInternalObjectId());
+                Object idKey = IdentityUtils.getTargetKeyForDatastoreIdentity(sm.getInternalObjectId());
                 try
                 {
                     jsonobj.put(memberName, idKey);
@@ -132,11 +132,11 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 if (vermd.getVersionStrategy() == VersionStrategy.VERSION_NUMBER)
                 {
                     long versionNumber = 1;
-                    op.setTransactionalVersion(Long.valueOf(versionNumber));
+                    sm.setTransactionalVersion(Long.valueOf(versionNumber));
                     if (NucleusLogger.DATASTORE.isDebugEnabled())
                     {
-                        NucleusLogger.DATASTORE.debug(Localiser.msg("JSON.Insert.ObjectPersistedWithVersion", StringUtils.toJVMIDString(op.getObject()),
-                            op.getInternalObjectId(), "" + versionNumber));
+                        NucleusLogger.DATASTORE.debug(Localiser.msg("JSON.Insert.ObjectPersistedWithVersion", StringUtils.toJVMIDString(sm.getObject()),
+                            sm.getInternalObjectId(), "" + versionNumber));
                     }
                     try
                     {
@@ -153,11 +153,11 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                         AbstractMemberMetaData verfmd = cmd.getMetaDataForMember(vermd.getFieldName());
                         if (verfmd.getType() == Integer.class)
                         {
-                            op.replaceField(verfmd.getAbsoluteFieldNumber(), Integer.valueOf((int) versionNumber));
+                            sm.replaceField(verfmd.getAbsoluteFieldNumber(), Integer.valueOf((int) versionNumber));
                         }
                         else
                         {
-                            op.replaceField(verfmd.getAbsoluteFieldNumber(), Long.valueOf(versionNumber));
+                            sm.replaceField(verfmd.getAbsoluteFieldNumber(), Long.valueOf(versionNumber));
                         }
                     }
                 }
@@ -165,11 +165,11 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 {
                     Date date = new Date();
                     Timestamp ts = new Timestamp(date.getTime());
-                    op.setTransactionalVersion(ts);
+                    sm.setTransactionalVersion(ts);
                     if (NucleusLogger.DATASTORE.isDebugEnabled())
                     {
-                        NucleusLogger.DATASTORE.debug(Localiser.msg("JSON.Insert.ObjectPersistedWithVersion", StringUtils.toJVMIDString(op.getObject()),
-                            op.getInternalObjectId(), "" + ts));
+                        NucleusLogger.DATASTORE.debug(Localiser.msg("JSON.Insert.ObjectPersistedWithVersion", StringUtils.toJVMIDString(sm.getObject()),
+                            sm.getInternalObjectId(), "" + ts));
                     }
                     try
                     {
@@ -183,7 +183,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             }
 
             int[] fieldNumbers = cmd.getAllMemberPositions();
-            op.provideFields(fieldNumbers, new StoreFieldManager(op, jsonobj, true, table));
+            sm.provideFields(fieldNumbers, new StoreFieldManager(sm, jsonobj, true, table));
 
             String jsonString = jsonobj.toString();
             if (NucleusLogger.DATASTORE_NATIVE.isDebugEnabled())
@@ -210,13 +210,13 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         }
     }
 
-    public void updateObject(ObjectProvider op, int[] fieldNumbers)
+    public void updateObject(ObjectProvider sm, int[] fieldNumbers)
     {
         // Check if read-only so update not permitted
-        assertReadOnlyForUpdateOfObject(op);
+        assertReadOnlyForUpdateOfObject(sm);
 
-        ExecutionContext ec = op.getExecutionContext();
-        AbstractClassMetaData cmd = op.getClassMetaData();
+        ExecutionContext ec = sm.getExecutionContext();
+        AbstractClassMetaData cmd = sm.getClassMetaData();
         if (!storeMgr.managesClass(cmd.getFullClassName()))
         {
             // Make sure schema exists, using this connection
@@ -225,7 +225,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         Table table = storeMgr.getStoreDataForClass(cmd.getFullClassName()).getTable();
 
         Map<String, String> options = new HashMap<String, String>();
-        options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(op));
+        options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(sm));
         options.put("Content-Type", "application/json");
 
         ManagedConnection mconn = storeMgr.getConnectionManager().getConnection(ec, options);
@@ -233,7 +233,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         try
         {
             int[] updatedFieldNums = fieldNumbers;
-            Object currentVersion = op.getTransactionalVersion();
+            Object currentVersion = sm.getTransactionalVersion();
             Object nextVersion = null;
             if (cmd.isVersioned())
             {
@@ -255,7 +255,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                         // Cater for Integer-based versions TODO Generalise this
                         nextVersion = Integer.valueOf(((Long) nextVersion).intValue());
                     }
-                    op.replaceField(verMmd.getAbsoluteFieldNumber(), nextVersion);
+                    sm.replaceField(verMmd.getAbsoluteFieldNumber(), nextVersion);
 
                     boolean updatingVerField = false;
                     for (int i = 0; i < fieldNumbers.length; i++)
@@ -278,7 +278,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                     // Surrogate version column
                     nextVersion = ec.getLockManager().getNextVersion(vermd, currentVersion);
                 }
-                op.setTransactionalVersion(nextVersion);
+                sm.setTransactionalVersion(nextVersion);
             }
 
             long startTime = System.currentTimeMillis();
@@ -293,7 +293,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                     }
                     fieldStr.append(cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumbers[i]).getName());
                 }
-                NucleusLogger.DATASTORE_PERSIST.debug(Localiser.msg("JSON.Update.Start", op.getObjectAsPrintable(), op.getInternalObjectId(),
+                NucleusLogger.DATASTORE_PERSIST.debug(Localiser.msg("JSON.Update.Start", sm.getObjectAsPrintable(), sm.getInternalObjectId(),
                     fieldStr.toString()));
             }
 
@@ -316,8 +316,8 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 {
                     if (NucleusLogger.DATASTORE.isDebugEnabled())
                     {
-                        NucleusLogger.DATASTORE.debug(Localiser.msg("JSON.Insert.ObjectPersistedWithVersion", StringUtils.toJVMIDString(op.getObject()),
-                            op.getInternalObjectId(), "" + nextVersion));
+                        NucleusLogger.DATASTORE.debug(Localiser.msg("JSON.Insert.ObjectPersistedWithVersion", StringUtils.toJVMIDString(sm.getObject()),
+                            sm.getInternalObjectId(), "" + nextVersion));
                     }
                     try
                     {
@@ -332,8 +332,8 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 {
                     if (NucleusLogger.DATASTORE.isDebugEnabled())
                     {
-                        NucleusLogger.DATASTORE.debug(Localiser.msg("JSON.Insert.ObjectPersistedWithVersion", StringUtils.toJVMIDString(op.getObject()),
-                            op.getInternalObjectId(), "" + nextVersion));
+                        NucleusLogger.DATASTORE.debug(Localiser.msg("JSON.Insert.ObjectPersistedWithVersion", StringUtils.toJVMIDString(sm.getObject()),
+                            sm.getInternalObjectId(), "" + nextVersion));
                     }
 
                     Timestamp ts = (Timestamp) nextVersion;
@@ -350,9 +350,9 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 }
             }
 
-            FieldManager storeFM = new StoreFieldManager(op, jsonobj, false, table);
-            op.provideFields(updatedFieldNums, storeFM);
-            op.provideFields(op.getClassMetaData().getPKMemberPositions(), storeFM);
+            FieldManager storeFM = new StoreFieldManager(sm, jsonobj, false, table);
+            sm.provideFields(updatedFieldNums, storeFM);
+            sm.provideFields(sm.getClassMetaData().getPKMemberPositions(), storeFM);
 
             String jsonString = jsonobj.toString();
             if (NucleusLogger.DATASTORE_NATIVE.isDebugEnabled())
@@ -379,14 +379,14 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         }
     }
 
-    public void deleteObject(ObjectProvider op)
+    public void deleteObject(ObjectProvider sm)
     {
         // Check if read-only so update not permitted
-        assertReadOnlyForUpdateOfObject(op);
+        assertReadOnlyForUpdateOfObject(sm);
 
         Map<String, String> options = new HashMap<String, String>();
-        options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(op));
-        ExecutionContext ec = op.getExecutionContext();
+        options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(sm));
+        ExecutionContext ec = sm.getExecutionContext();
         ManagedConnection mconn = storeMgr.getConnectionManager().getConnection(ec, options);
         URLConnection conn = (URLConnection) mconn.getConnection();
         try
@@ -394,7 +394,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             long startTime = System.currentTimeMillis();
             if (NucleusLogger.DATASTORE_PERSIST.isDebugEnabled())
             {
-                NucleusLogger.DATASTORE_PERSIST.debug(Localiser.msg("JSON.Delete.Start", op.getObjectAsPrintable(), op.getInternalObjectId()));
+                NucleusLogger.DATASTORE_PERSIST.debug(Localiser.msg("JSON.Delete.Start", sm.getObjectAsPrintable(), sm.getInternalObjectId()));
             }
 
             HttpURLConnection http = (HttpURLConnection) conn;
@@ -412,7 +412,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             http.setConnectTimeout(10000);
             if (NucleusLogger.DATASTORE_NATIVE.isDebugEnabled())
             {
-                NucleusLogger.DATASTORE_NATIVE.debug("DELETE " + op.getInternalObjectId());
+                NucleusLogger.DATASTORE_NATIVE.debug("DELETE " + sm.getInternalObjectId());
             }
             http.connect();
 
@@ -443,23 +443,23 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         }
     }
 
-    public void fetchObject(ObjectProvider op, int[] fieldNumbers)
+    public void fetchObject(ObjectProvider sm, int[] fieldNumbers)
     {
         Map<String, String> options = new HashMap<String, String>();
-        options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(op));
-        ExecutionContext ec = op.getExecutionContext();
+        options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(sm));
+        ExecutionContext ec = sm.getExecutionContext();
         ManagedConnection mconn = storeMgr.getConnectionManager().getConnection(ec, options);
         URLConnection conn = (URLConnection) mconn.getConnection();
         try
         {
-            AbstractClassMetaData cmd = op.getClassMetaData();
+            AbstractClassMetaData cmd = sm.getClassMetaData();
             Table table = storeMgr.getStoreDataForClass(cmd.getFullClassName()).getTable();
             if (NucleusLogger.PERSISTENCE.isDebugEnabled())
             {
                 // Debug information about what we are retrieving
                 StringBuilder str = new StringBuilder("Fetching object \"");
-                str.append(op.getObjectAsPrintable()).append("\" (id=");
-                str.append(op.getInternalObjectId()).append(")").append(" fields [");
+                str.append(sm.getObjectAsPrintable()).append("\" (id=");
+                str.append(sm.getInternalObjectId()).append(")").append(" fields [");
                 for (int i = 0; i < fieldNumbers.length; i++)
                 {
                     if (i > 0)
@@ -475,7 +475,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             long startTime = System.currentTimeMillis();
             if (NucleusLogger.DATASTORE_RETRIEVE.isDebugEnabled())
             {
-                NucleusLogger.DATASTORE_RETRIEVE.debug(Localiser.msg("JSON.Fetch.Start", op.getObjectAsPrintable(), op.getInternalObjectId()));
+                NucleusLogger.DATASTORE_RETRIEVE.debug(Localiser.msg("JSON.Fetch.Start", sm.getObjectAsPrintable(), sm.getInternalObjectId()));
             }
 
             // Create JSON object with PK fields set and get the object
@@ -483,7 +483,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             if (cmd.getIdentityType() == IdentityType.DATASTORE)
             {
                 String memberName = table.getSurrogateColumn(SurrogateColumnType.DATASTORE_ID).getName();
-                Object idKey = IdentityUtils.getTargetKeyForDatastoreIdentity(op.getInternalObjectId());
+                Object idKey = IdentityUtils.getTargetKeyForDatastoreIdentity(sm.getInternalObjectId());
                 try
                 {
                     jsonobj.put(memberName, idKey);
@@ -495,7 +495,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             }
             else if (cmd.getIdentityType() == IdentityType.APPLICATION)
             {
-                op.provideFields(op.getClassMetaData().getPKMemberPositions(), new StoreFieldManager(op, jsonobj, true, table));
+                sm.provideFields(sm.getClassMetaData().getPKMemberPositions(), new StoreFieldManager(sm, jsonobj, true, table));
             }
             JSONObject result = read("GET", conn.getURL().toExternalForm(), conn, getHeaders("GET", options));
 
@@ -510,7 +510,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                 ec.getStatistics().incrementFetchCount();
             }
 
-            op.replaceFields(fieldNumbers, new FetchFieldManager(op, result, table));
+            sm.replaceFields(fieldNumbers, new FetchFieldManager(sm, result, table));
 
             if (NucleusLogger.DATASTORE_RETRIEVE.isDebugEnabled())
             {
@@ -528,11 +528,11 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         return null;
     }
 
-    public void locateObject(ObjectProvider op)
+    public void locateObject(ObjectProvider sm)
     {
         Map<String, String> options = new HashMap<String, String>();
-        options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(op));
-        ExecutionContext ec = op.getExecutionContext();
+        options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(sm));
+        ExecutionContext ec = sm.getExecutionContext();
         ManagedConnection mconn = storeMgr.getConnectionManager().getConnection(ec, options);
         URLConnection conn = (URLConnection) mconn.getConnection();
 
@@ -840,25 +840,25 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                         return null;
                     }
 
-                    public void fetchNonLoadedFields(ObjectProvider op)
+                    public void fetchNonLoadedFields(ObjectProvider sm)
                     {
-                        op.replaceNonLoadedFields(cmd.getAllMemberPositions(), fetchFM);
+                        sm.replaceNonLoadedFields(cmd.getAllMemberPositions(), fetchFM);
                     }
 
-                    public void fetchFields(ObjectProvider op)
+                    public void fetchFields(ObjectProvider sm)
                     {
-                        op.replaceFields(cmd.getAllMemberPositions(), fetchFM);
+                        sm.replaceFields(cmd.getAllMemberPositions(), fetchFM);
                     }
                 }, null, ignoreCache, false);
-                ObjectProvider op = ec.findObjectProvider(obj);
+                ObjectProvider sm = ec.findObjectProvider(obj);
 
                 if (cmd.isVersioned() && version != null)
                 {
-                    op.setVersion(version);
+                    sm.setVersion(version);
                 }
 
                 // Any fields loaded above will not be wrapped since we did not have the ObjectProvider at the point of creating the FetchFieldManager, so wrap them now
-                op.replaceAllLoadedSCOFieldsWithWrappers();
+                sm.replaceAllLoadedSCOFieldsWithWrappers();
 
                 results.add(obj);
             }
@@ -871,21 +871,21 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         return results;
     }
 
-    protected String getURLPath(ObjectProvider op)
+    protected String getURLPath(ObjectProvider sm)
     {
-        AbstractClassMetaData cmd = op.getClassMetaData();
+        AbstractClassMetaData cmd = sm.getClassMetaData();
         Table table = storeMgr.getStoreDataForClass(cmd.getFullClassName()).getTable();
         String url = getURLPath(cmd);
 
         if (cmd.getIdentityType() == IdentityType.DATASTORE)
         {
-            url += IdentityUtils.getTargetKeyForDatastoreIdentity(op.getInternalObjectId());
+            url += IdentityUtils.getTargetKeyForDatastoreIdentity(sm.getInternalObjectId());
         }
         else if (cmd.getIdentityType() == IdentityType.APPLICATION)
         {
             // Create JSON object with PK fields set and get the object
             JSONObject jsonobj = new JSONObject();
-            op.provideFields(cmd.getPKMemberPositions(), new StoreFieldManager(op, jsonobj, true, table));
+            sm.provideFields(cmd.getPKMemberPositions(), new StoreFieldManager(sm, jsonobj, true, table));
             try
             {
                 // Append the PK to the URL

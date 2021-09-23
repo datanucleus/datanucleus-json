@@ -51,9 +51,9 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
         this.mmds = mmds;
     }
 
-    public FetchEmbeddedFieldManager(ObjectProvider op, JSONObject jsonobj, List<AbstractMemberMetaData> mmds, Table table)
+    public FetchEmbeddedFieldManager(ObjectProvider sm, JSONObject jsonobj, List<AbstractMemberMetaData> mmds, Table table)
     {
-        super(op, jsonobj, table);
+        super(sm, jsonobj, table);
         this.mmds = mmds;
     }
 
@@ -73,8 +73,8 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
         if (mmds.size() == 1 && embmd != null && embmd.getOwnerMember() != null && embmd.getOwnerMember().equals(mmd.getName()))
         {
             // Special case of this being a link back to the owner. TODO Repeat this for nested and their owners
-            ObjectProvider[] ownerOps = ec.getOwnersForEmbeddedObjectProvider(op);
-            return (ownerOps != null && ownerOps.length > 0 ? ownerOps[0].getObject() : null);
+            ObjectProvider[] ownerSMs = ec.getOwnersForEmbeddedObjectProvider(op);
+            return (ownerSMs != null && ownerSMs.length > 0 ? ownerSMs[0].getObject() : null);
         }
 
         if (relationType != RelationType.NONE && MetaDataUtils.getInstance().isMemberEmbedded(ec.getMetaDataManager(), clr, mmd, relationType, null))
@@ -123,17 +123,17 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
                 JSONObject embobj = jsonobj.getJSONObject(name);
                 NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED; This is experimental : " + embobj);
 
-                ObjectProvider embOP = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, op, fieldNumber);
-                FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embOP, embobj, embMmds, table);
-                embOP.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
-                return embOP.getObject();
+                ObjectProvider embSM = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, op, fieldNumber);
+                FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embSM, embobj, embMmds, table);
+                embSM.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
+                return embSM.getObject();
             }
 
             // Flat embedded. Stored as multiple properties in the owner object
-            ObjectProvider embOP = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, op, fieldNumber);
-            FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embOP, jsonobj, embMmds, table);
-            embOP.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
-            return embOP.getObject();
+            ObjectProvider embSM = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, op, fieldNumber);
+            FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embSM, jsonobj, embMmds, table);
+            embSM.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
+            return embSM.getObject();
         }
         else if (RelationType.isRelationMultiValued(relationType))
         {

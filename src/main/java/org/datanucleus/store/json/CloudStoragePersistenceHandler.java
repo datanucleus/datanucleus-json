@@ -70,32 +70,32 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
         super(storeMgr);
     }
 
-    public void insertObject(ObjectProvider op)
+    public void insertObject(ObjectProvider sm)
     {
         // Check if read-only so update not permitted
-        assertReadOnlyForUpdateOfObject(op);
+        assertReadOnlyForUpdateOfObject(sm);
 
-        AbstractClassMetaData cmd = op.getClassMetaData();
+        AbstractClassMetaData cmd = sm.getClassMetaData();
         if (!storeMgr.managesClass(cmd.getFullClassName()))
         {
             // Make sure schema exists, using this connection
-            storeMgr.manageClasses(op.getExecutionContext().getClassLoaderResolver(), new String[] {cmd.getFullClassName()});
+            storeMgr.manageClasses(sm.getExecutionContext().getClassLoaderResolver(), new String[] {cmd.getFullClassName()});
         }
         Table table = storeMgr.getStoreDataForClass(cmd.getFullClassName()).getTable();
 
         Map<String,String> options = new HashMap<String,String>();
         options.put(ConnectionFactoryImpl.STORE_JSON_URL, "/");
-        ManagedConnection mconn = storeMgr.getConnectionManager().getConnection(op.getExecutionContext(), options);
+        ManagedConnection mconn = storeMgr.getConnectionManager().getConnection(sm.getExecutionContext(), options);
         URLConnection conn = (URLConnection) mconn.getConnection();
         createBucket(conn, getHeaderForBucket());
 
-        options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(op));
+        options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(sm));
         options.put("Content-Type", "application/json");
-        mconn = storeMgr.getConnectionManager().getConnection(op.getExecutionContext(), options);
+        mconn = storeMgr.getConnectionManager().getConnection(sm.getExecutionContext(), options);
         conn = (URLConnection) mconn.getConnection();
 
         JSONObject jsonobj = new JSONObject();
-        op.provideFields(op.getClassMetaData().getAllMemberPositions(), new StoreFieldManager(op, jsonobj, true, table));
+        sm.provideFields(sm.getClassMetaData().getAllMemberPositions(), new StoreFieldManager(sm, jsonobj, true, table));
         write("PUT", conn.getURL().getPath(), conn, jsonobj.toString(), getHeaders("PUT",options));
     }
 
@@ -386,19 +386,18 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                     {
                         return null;
                     }
-                    public void fetchNonLoadedFields(ObjectProvider op)
+                    public void fetchNonLoadedFields(ObjectProvider sm)
                     {
-                        op.replaceNonLoadedFields(cmd.getPKMemberPositions(), fm);
+                        sm.replaceNonLoadedFields(cmd.getPKMemberPositions(), fm);
                     }
-                    public void fetchFields(ObjectProvider op)
+                    public void fetchFields(ObjectProvider sm)
                     {
-                        op.replaceFields(cmd.getPKMemberPositions(), fm);
+                        sm.replaceFields(cmd.getPKMemberPositions(), fm);
                     }
                 }, null, ignoreCache, false);
-                ObjectProvider op = ec.findObjectProvider(pc);
 
                 // Any fields loaded above will not be wrapped since we did not have the ObjectProvider at the point of creating the FetchFieldManager, so wrap them now
-                op.replaceAllLoadedSCOFieldsWithWrappers();
+                ec.findObjectProvider(pc).replaceAllLoadedSCOFieldsWithWrappers();
 
                 results.add(pc);
             }
