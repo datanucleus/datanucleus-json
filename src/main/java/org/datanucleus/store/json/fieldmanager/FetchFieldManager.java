@@ -262,7 +262,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
         AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber);
         if (mmd.getPersistenceModifier() != FieldPersistenceModifier.PERSISTENT)
         {
-            return op.provideField(fieldNumber);
+            return sm.provideField(fieldNumber);
         }
 
         ClassLoaderResolver clr = ec.getClassLoaderResolver();
@@ -314,7 +314,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                 JSONObject embobj = jsonobj.getJSONObject(name);
                 NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED; This is experimental : " + embobj);
 
-                ObjectProvider embSM = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, op, fieldNumber);
+                ObjectProvider embSM = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, sm, fieldNumber);
                 FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embSM, embobj, embMmds, table);
                 embSM.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
                 return embSM.getObject();
@@ -322,7 +322,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
             // Flat embedded. Stored as multiple properties in the owner object
             // TODO Null detection
-            ObjectProvider embSM = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, op, fieldNumber);
+            ObjectProvider embSM = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, sm, fieldNumber);
             FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embSM, jsonobj, embMmds, table);
             embSM.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
             return embSM.getObject();
@@ -438,9 +438,9 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     }
 
                     Object memberValue = conv.toMemberType(valuesArr);
-                    if (op != null && memberValue != null)
+                    if (sm != null && memberValue != null)
                     {
-                        memberValue = SCOUtils.wrapSCOField(op, fieldNumber, memberValue, true);
+                        memberValue = SCOUtils.wrapSCOField(sm, fieldNumber, memberValue, true);
                     }
                     return memberValue;
                 }
@@ -477,9 +477,9 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     returnValue = conv.toMemberType(jsonobj.getLong(colName));
                 }
                 // TODO Support Date types persisted using converter
-                if (op != null)
+                if (sm != null)
                 {
-                    returnValue = SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), returnValue, true);
+                    returnValue = SCOUtils.wrapSCOField(sm, mmd.getAbsoluteFieldNumber(), returnValue, true);
                 }
                 return returnValue;
             }
@@ -584,7 +584,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                 }
                 Object val = optional ? (coll == null ? Optional.empty() : Optional.of(coll)) : coll;
 
-                return op!=null ? SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), val, true) : val;
+                return sm!=null ? SCOUtils.wrapSCOField(sm, mmd.getAbsoluteFieldNumber(), val, true) : val;
             }
             else if (Map.class.isAssignableFrom(mmd.getType()))
             {
@@ -640,9 +640,9 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     map.put(key, val);
                 }
 
-                if (op != null)
+                if (sm != null)
                 {
-                    SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), map, true);
+                    SCOUtils.wrapSCOField(sm, mmd.getAbsoluteFieldNumber(), map, true);
                 }
                 return map;
             }
@@ -707,9 +707,9 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     }
                 }
 
-                if (op != null)
+                if (sm != null)
                 {
-                    SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), returnValue, true);
+                    SCOUtils.wrapSCOField(sm, mmd.getAbsoluteFieldNumber(), returnValue, true);
                 }
                 return returnValue;
             }
@@ -743,7 +743,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             }
             catch (NucleusObjectNotFoundException nfe)
             {
-                NucleusLogger.GENERAL.warn("Object=" + op + " field=" + mmd.getFullFieldName() + " has id=" + idStr + " but could not instantiate object with that identity");
+                NucleusLogger.GENERAL.warn("Object=" + sm + " field=" + mmd.getFullFieldName() + " has id=" + idStr + " but could not instantiate object with that identity");
                 return optional ? Optional.empty() : null;
             }
         }
@@ -809,12 +809,12 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     }
                 }
 
-                if (op != null)
+                if (sm != null)
                 {
-                    coll = (Collection) SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), coll, true);
+                    coll = (Collection) SCOUtils.wrapSCOField(sm, mmd.getAbsoluteFieldNumber(), coll, true);
                     if (changeDetected)
                     {
-                        op.makeDirty(mmd.getAbsoluteFieldNumber());
+                        sm.makeDirty(mmd.getAbsoluteFieldNumber());
                     }
                 }
                 return coll;
@@ -865,12 +865,12 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                             Array.set(array, j, Array.get(arrayOld, j));
                         }
                     }
-                    if (op != null)
+                    if (sm != null)
                     {
-                        array = SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), array, true);
+                        array = SCOUtils.wrapSCOField(sm, mmd.getAbsoluteFieldNumber(), array, true);
                         if (changeDetected)
                         {
-                            op.makeDirty(mmd.getAbsoluteFieldNumber());
+                            sm.makeDirty(mmd.getAbsoluteFieldNumber());
                         }
                     }
                 }
@@ -970,12 +970,12 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     }
                 }
 
-                if (op != null)
+                if (sm != null)
                 {
-                    map = (Map) SCOUtils.wrapSCOField(op, mmd.getAbsoluteFieldNumber(), map, true);
+                    map = (Map) SCOUtils.wrapSCOField(sm, mmd.getAbsoluteFieldNumber(), map, true);
                     if (changeDetected)
                     {
-                        op.makeDirty(mmd.getAbsoluteFieldNumber());
+                        sm.makeDirty(mmd.getAbsoluteFieldNumber());
                     }
                 }
                 return map;

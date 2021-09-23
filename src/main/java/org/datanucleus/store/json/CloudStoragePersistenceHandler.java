@@ -396,7 +396,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                     }
                 }, null, ignoreCache, false);
 
-                // Any fields loaded above will not be wrapped since we did not have the ObjectProvider at the point of creating the FetchFieldManager, so wrap them now
+                // Any fields loaded above will not be wrapped since we did not have StateManager at the point of creating the FetchFieldManager, so wrap them now
                 ec.findObjectProvider(pc).replaceAllLoadedSCOFieldsWithWrappers();
 
                 results.add(pc);

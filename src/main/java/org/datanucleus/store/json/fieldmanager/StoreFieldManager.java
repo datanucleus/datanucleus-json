@@ -53,7 +53,7 @@ import org.datanucleus.util.Localiser;
 import org.datanucleus.util.NucleusLogger;
 
 /**
- * FieldManager for inserting data into the provided JSONObject from the ObjectProvider.
+ * FieldManager for inserting data into the provided JSONObject from StateManager.
  */
 public class StoreFieldManager extends AbstractStoreFieldManager
 {
@@ -256,7 +256,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
             return;
         }
 
-        ExecutionContext ec = op.getExecutionContext();
+        ExecutionContext ec = sm.getExecutionContext();
         ClassLoaderResolver clr = ec.getClassLoaderResolver();
         RelationType relationType = mmd.getRelationType(clr);
 
@@ -322,7 +322,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
                 List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>();
                 embMmds.add(mmd);
-                ObjectProvider embOP = ec.findObjectProviderForEmbedded(value, op, mmd);
+                ObjectProvider embOP = ec.findObjectProviderForEmbedded(value, sm, mmd);
                 StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(embOP, embobj, insert, embMmds, table);
                 embOP.provideFields(embCmd.getAllMemberPositions(), storeEmbFM);
                 NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED. This is experimental : " + embobj);
@@ -363,7 +363,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 return;
             }
 
-            ObjectProvider embOP = ec.findObjectProviderForEmbedded(value, op, mmd);
+            ObjectProvider embOP = ec.findObjectProviderForEmbedded(value, sm, mmd);
             StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(embOP, jsonobj, insert, embMmds, table);
             embOP.provideFields(embMmdPosns, storeEmbFM);
             return;
@@ -541,7 +541,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 return;
             }
 
-            Object valuePC = ec.persistObjectInternal(value, op, fieldNumber, -1);
+            Object valuePC = ec.persistObjectInternal(value, sm, fieldNumber, -1);
             Object valueId = ec.getApiAdapter().getIdForObject(valuePC);
             jsonobj.put(name, IdentityUtils.getPersistableIdentityForId(valueId));
             return;
@@ -582,7 +582,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 while (collIter.hasNext())
                 {
                     Object element = collIter.next();
-                    Object elementPC = ec.persistObjectInternal(element, op, fieldNumber, -1);
+                    Object elementPC = ec.persistObjectInternal(element, sm, fieldNumber, -1);
                     Object elementID = ec.getApiAdapter().getIdForObject(elementPC);
                     idColl.add(IdentityUtils.getPersistableIdentityForId(elementID));
                 }
@@ -595,7 +595,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 for (int i=0;i<Array.getLength(value);i++)
                 {
                     Object element = Array.get(value, i);
-                    Object elementPC = ec.persistObjectInternal(element, op, fieldNumber, -1);
+                    Object elementPC = ec.persistObjectInternal(element, sm, fieldNumber, -1);
                     Object elementID = ec.getApiAdapter().getIdForObject(elementPC);
                     ids.add(IdentityUtils.getPersistableIdentityForId(elementID));
                 }
@@ -617,7 +617,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                     Object val = null;
                     if (keyCmd != null)
                     {
-                        Object keyPC = ec.persistObjectInternal(entry.getKey(), op, fieldNumber, -1);
+                        Object keyPC = ec.persistObjectInternal(entry.getKey(), sm, fieldNumber, -1);
                         key = ec.getApiAdapter().getIdForObject(keyPC);
                         key = IdentityUtils.getPersistableIdentityForId(key);
                     }
@@ -627,7 +627,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                     }
                     if (valCmd != null)
                     {
-                        Object valPC = ec.persistObjectInternal(entry.getValue(), op, fieldNumber, -1);
+                        Object valPC = ec.persistObjectInternal(entry.getValue(), sm, fieldNumber, -1);
                         val = ec.getApiAdapter().getIdForObject(valPC);
                         val = IdentityUtils.getPersistableIdentityForId(val);
                     }

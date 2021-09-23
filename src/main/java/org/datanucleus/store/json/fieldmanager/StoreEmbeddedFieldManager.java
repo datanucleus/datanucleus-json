@@ -77,13 +77,13 @@ public class StoreEmbeddedFieldManager extends StoreFieldManager
         if (mmds.size() == 1 && embmd != null && embmd.getOwnerMember() != null && embmd.getOwnerMember().equals(mmd.getName()))
         {
             // Special case of this member being a link back to the owner. TODO Repeat this for nested and their owners
-            if (op != null)
+            if (sm != null)
             {
-                ObjectProvider[] ownerSMs = ec.getOwnersForEmbeddedObjectProvider(op);
+                ObjectProvider[] ownerSMs = ec.getOwnersForEmbeddedObjectProvider(sm);
                 if (ownerSMs != null && ownerSMs.length == 1 && value != ownerSMs[0].getObject())
                 {
                     // Make sure the owner field is set
-                    op.replaceField(fieldNumber, ownerSMs[0].getObject());
+                    sm.replaceField(fieldNumber, ownerSMs[0].getObject());
                 }
             }
             return;
@@ -104,7 +104,7 @@ public class StoreEmbeddedFieldManager extends StoreFieldManager
             }
         }
 
-        if (op == null)
+        if (sm == null)
         {
             // Null the column
             MemberColumnMapping mapping = getColumnMapping(fieldNumber);
@@ -149,7 +149,7 @@ public class StoreEmbeddedFieldManager extends StoreFieldManager
 
                 List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>(mmds);
                 embMmds.add(mmd);
-                ObjectProvider embSM = ec.findObjectProviderForEmbedded(value, op, mmd);
+                ObjectProvider embSM = ec.findObjectProviderForEmbedded(value, sm, mmd);
                 StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(embSM, embobj, insert, embMmds, table);
                 embSM.provideFields(embCmd.getAllMemberPositions(), storeEmbFM);
                 NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED. This is experimental : " + embobj);
@@ -166,11 +166,11 @@ public class StoreEmbeddedFieldManager extends StoreFieldManager
                 ObjectProvider embSM = null;
                 if (value != null)
                 {
-                    embSM = ec.findObjectProviderForEmbedded(value, op, mmd);
+                    embSM = ec.findObjectProviderForEmbedded(value, sm, mmd);
                 }
                 else
                 {
-                    embSM = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, op, fieldNumber);
+                    embSM = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, sm, fieldNumber);
                 }
 
                 List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>(mmds);
