@@ -45,7 +45,7 @@ import org.datanucleus.exceptions.NucleusException;
 import org.datanucleus.identity.IdentityUtils;
 import org.datanucleus.metadata.AbstractClassMetaData;
 import org.datanucleus.metadata.IdentityType;
-import org.datanucleus.state.ObjectProvider;
+import org.datanucleus.state.DNStateManager;
 import org.datanucleus.store.FieldValues;
 import org.datanucleus.store.StoreManager;
 import org.datanucleus.store.connection.ManagedConnection;
@@ -70,7 +70,7 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
         super(storeMgr);
     }
 
-    public void insertObject(ObjectProvider sm)
+    public void insertObject(DNStateManager sm)
     {
         // Check if read-only so update not permitted
         assertReadOnlyForUpdateOfObject(sm);
@@ -386,18 +386,18 @@ public abstract class CloudStoragePersistenceHandler extends JsonPersistenceHand
                     {
                         return null;
                     }
-                    public void fetchNonLoadedFields(ObjectProvider sm)
+                    public void fetchNonLoadedFields(DNStateManager sm)
                     {
                         sm.replaceNonLoadedFields(cmd.getPKMemberPositions(), fm);
                     }
-                    public void fetchFields(ObjectProvider sm)
+                    public void fetchFields(DNStateManager sm)
                     {
                         sm.replaceFields(cmd.getPKMemberPositions(), fm);
                     }
                 }, null, ignoreCache, false);
 
                 // Any fields loaded above will not be wrapped since we did not have StateManager at the point of creating the FetchFieldManager, so wrap them now
-                ec.findObjectProvider(pc).replaceAllLoadedSCOFieldsWithWrappers();
+                ec.findStateManager(pc).replaceAllLoadedSCOFieldsWithWrappers();
 
                 results.add(pc);
             }

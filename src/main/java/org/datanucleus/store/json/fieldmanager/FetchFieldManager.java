@@ -45,7 +45,7 @@ import org.datanucleus.metadata.FieldRole;
 import org.datanucleus.metadata.JdbcType;
 import org.datanucleus.metadata.MetaDataUtils;
 import org.datanucleus.metadata.RelationType;
-import org.datanucleus.state.ObjectProvider;
+import org.datanucleus.state.DNStateManager;
 import org.datanucleus.store.StoreManager;
 import org.datanucleus.store.fieldmanager.AbstractFetchFieldManager;
 import org.datanucleus.store.fieldmanager.FieldManager;
@@ -81,7 +81,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
         this.table = table;
     }
 
-    public FetchFieldManager(ObjectProvider sm, JSONObject jsonobj, Table table)
+    public FetchFieldManager(DNStateManager sm, JSONObject jsonobj, Table table)
     {
         super(sm);
         this.jsonobj = jsonobj;
@@ -314,7 +314,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                 JSONObject embobj = jsonobj.getJSONObject(name);
                 NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED; This is experimental : " + embobj);
 
-                ObjectProvider embSM = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, sm, fieldNumber);
+                DNStateManager embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, fieldNumber);
                 FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embSM, embobj, embMmds, table);
                 embSM.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
                 return embSM.getObject();
@@ -322,7 +322,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
             // Flat embedded. Stored as multiple properties in the owner object
             // TODO Null detection
-            ObjectProvider embSM = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, sm, fieldNumber);
+            DNStateManager embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, fieldNumber);
             FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embSM, jsonobj, embMmds, table);
             embSM.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
             return embSM.getObject();

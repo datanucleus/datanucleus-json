@@ -44,7 +44,7 @@ import org.datanucleus.metadata.AbstractMemberMetaData;
 import org.datanucleus.metadata.IdentityType;
 import org.datanucleus.metadata.VersionMetaData;
 import org.datanucleus.metadata.VersionStrategy;
-import org.datanucleus.state.ObjectProvider;
+import org.datanucleus.state.DNStateManager;
 import org.datanucleus.store.AbstractPersistenceHandler;
 import org.datanucleus.store.FieldValues;
 import org.datanucleus.store.StoreManager;
@@ -73,7 +73,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         // nothing to do
     }
 
-    public void insertObject(ObjectProvider sm)
+    public void insertObject(DNStateManager sm)
     {
         // Check if read-only so update not permitted
         assertReadOnlyForUpdateOfObject(sm);
@@ -210,7 +210,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         }
     }
 
-    public void updateObject(ObjectProvider sm, int[] fieldNumbers)
+    public void updateObject(DNStateManager sm, int[] fieldNumbers)
     {
         // Check if read-only so update not permitted
         assertReadOnlyForUpdateOfObject(sm);
@@ -379,7 +379,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         }
     }
 
-    public void deleteObject(ObjectProvider sm)
+    public void deleteObject(DNStateManager sm)
     {
         // Check if read-only so update not permitted
         assertReadOnlyForUpdateOfObject(sm);
@@ -443,7 +443,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         }
     }
 
-    public void fetchObject(ObjectProvider sm, int[] fieldNumbers)
+    public void fetchObject(DNStateManager sm, int[] fieldNumbers)
     {
         Map<String, String> options = new HashMap<String, String>();
         options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(sm));
@@ -528,7 +528,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         return null;
     }
 
-    public void locateObject(ObjectProvider sm)
+    public void locateObject(DNStateManager sm)
     {
         Map<String, String> options = new HashMap<String, String>();
         options.put(ConnectionFactoryImpl.STORE_JSON_URL, getURLPath(sm));
@@ -840,17 +840,17 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                         return null;
                     }
 
-                    public void fetchNonLoadedFields(ObjectProvider sm)
+                    public void fetchNonLoadedFields(DNStateManager sm)
                     {
                         sm.replaceNonLoadedFields(cmd.getAllMemberPositions(), fetchFM);
                     }
 
-                    public void fetchFields(ObjectProvider sm)
+                    public void fetchFields(DNStateManager sm)
                     {
                         sm.replaceFields(cmd.getAllMemberPositions(), fetchFM);
                     }
                 }, null, ignoreCache, false);
-                ObjectProvider sm = ec.findObjectProvider(obj);
+                DNStateManager sm = ec.findStateManager(obj);
 
                 if (cmd.isVersioned() && version != null)
                 {
@@ -871,7 +871,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
         return results;
     }
 
-    protected String getURLPath(ObjectProvider sm)
+    protected String getURLPath(DNStateManager sm)
     {
         AbstractClassMetaData cmd = sm.getClassMetaData();
         Table table = storeMgr.getStoreDataForClass(cmd.getFullClassName()).getTable();

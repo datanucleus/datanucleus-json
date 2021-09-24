@@ -39,7 +39,7 @@ import org.datanucleus.metadata.AbstractMemberMetaData;
 import org.datanucleus.metadata.FieldRole;
 import org.datanucleus.metadata.MetaDataUtils;
 import org.datanucleus.metadata.RelationType;
-import org.datanucleus.state.ObjectProvider;
+import org.datanucleus.state.DNStateManager;
 import org.datanucleus.store.fieldmanager.AbstractStoreFieldManager;
 import org.datanucleus.store.json.CloudStorageUtils;
 import org.datanucleus.store.json.orgjson.JSONException;
@@ -67,7 +67,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
         this.table = table;
     }
 
-    public StoreFieldManager(ObjectProvider sm, JSONObject jsonobj, boolean insert, Table table)
+    public StoreFieldManager(DNStateManager sm, JSONObject jsonobj, boolean insert, Table table)
     {
         super(sm, insert);
         this.table = table;
@@ -322,9 +322,9 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
                 List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>();
                 embMmds.add(mmd);
-                ObjectProvider embOP = ec.findObjectProviderForEmbedded(value, sm, mmd);
-                StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(embOP, embobj, insert, embMmds, table);
-                embOP.provideFields(embCmd.getAllMemberPositions(), storeEmbFM);
+                DNStateManager embSM = ec.findStateManagerForEmbedded(value, sm, mmd);
+                StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(embSM, embobj, insert, embMmds, table);
+                embSM.provideFields(embCmd.getAllMemberPositions(), storeEmbFM);
                 NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED. This is experimental : " + embobj);
 
                 MemberColumnMapping mapping = getColumnMapping(fieldNumber); // TODO Update CompleteClassTable so that this has a mapping
@@ -363,9 +363,9 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 return;
             }
 
-            ObjectProvider embOP = ec.findObjectProviderForEmbedded(value, sm, mmd);
-            StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(embOP, jsonobj, insert, embMmds, table);
-            embOP.provideFields(embMmdPosns, storeEmbFM);
+            DNStateManager embSM = ec.findStateManagerForEmbedded(value, sm, mmd);
+            StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(embSM, jsonobj, insert, embMmds, table);
+            embSM.provideFields(embMmdPosns, storeEmbFM);
             return;
         }
         else if (RelationType.isRelationMultiValued(relationType))

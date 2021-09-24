@@ -28,7 +28,7 @@ import org.datanucleus.metadata.AbstractMemberMetaData;
 import org.datanucleus.metadata.EmbeddedMetaData;
 import org.datanucleus.metadata.MetaDataUtils;
 import org.datanucleus.metadata.RelationType;
-import org.datanucleus.state.ObjectProvider;
+import org.datanucleus.state.DNStateManager;
 import org.datanucleus.store.json.CloudStorageUtils;
 import org.datanucleus.store.json.orgjson.JSONException;
 import org.datanucleus.store.json.orgjson.JSONObject;
@@ -50,7 +50,7 @@ public class StoreEmbeddedFieldManager extends StoreFieldManager
         this.mmds = mmds;
     }
 
-    public StoreEmbeddedFieldManager(ObjectProvider sm, JSONObject jsonobj, boolean insert, List<AbstractMemberMetaData> mmds, Table table)
+    public StoreEmbeddedFieldManager(DNStateManager sm, JSONObject jsonobj, boolean insert, List<AbstractMemberMetaData> mmds, Table table)
     {
         super(sm, jsonobj, insert, table);
         this.mmds = mmds;
@@ -79,7 +79,7 @@ public class StoreEmbeddedFieldManager extends StoreFieldManager
             // Special case of this member being a link back to the owner. TODO Repeat this for nested and their owners
             if (sm != null)
             {
-                ObjectProvider[] ownerSMs = ec.getOwnersForEmbeddedObjectProvider(sm);
+                DNStateManager[] ownerSMs = ec.getOwnersForEmbeddedStateManager(sm);
                 if (ownerSMs != null && ownerSMs.length == 1 && value != ownerSMs[0].getObject())
                 {
                     // Make sure the owner field is set
@@ -149,7 +149,7 @@ public class StoreEmbeddedFieldManager extends StoreFieldManager
 
                 List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>(mmds);
                 embMmds.add(mmd);
-                ObjectProvider embSM = ec.findObjectProviderForEmbedded(value, sm, mmd);
+                DNStateManager embSM = ec.findStateManagerForEmbedded(value, sm, mmd);
                 StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(embSM, embobj, insert, embMmds, table);
                 embSM.provideFields(embCmd.getAllMemberPositions(), storeEmbFM);
                 NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED. This is experimental : " + embobj);
@@ -163,14 +163,14 @@ public class StoreEmbeddedFieldManager extends StoreFieldManager
             // Persistable object embedded into this table
             if (embCmd != null)
             {
-                ObjectProvider embSM = null;
+                DNStateManager embSM = null;
                 if (value != null)
                 {
-                    embSM = ec.findObjectProviderForEmbedded(value, sm, mmd);
+                    embSM = ec.findStateManagerForEmbedded(value, sm, mmd);
                 }
                 else
                 {
-                    embSM = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, sm, fieldNumber);
+                    embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, fieldNumber);
                 }
 
                 List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>(mmds);

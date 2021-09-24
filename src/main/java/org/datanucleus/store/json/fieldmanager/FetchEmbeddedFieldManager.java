@@ -28,7 +28,7 @@ import org.datanucleus.metadata.AbstractMemberMetaData;
 import org.datanucleus.metadata.EmbeddedMetaData;
 import org.datanucleus.metadata.MetaDataUtils;
 import org.datanucleus.metadata.RelationType;
-import org.datanucleus.state.ObjectProvider;
+import org.datanucleus.state.DNStateManager;
 import org.datanucleus.store.fieldmanager.FieldManager;
 import org.datanucleus.store.json.CloudStorageUtils;
 import org.datanucleus.store.json.orgjson.JSONException;
@@ -51,7 +51,7 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
         this.mmds = mmds;
     }
 
-    public FetchEmbeddedFieldManager(ObjectProvider sm, JSONObject jsonobj, List<AbstractMemberMetaData> mmds, Table table)
+    public FetchEmbeddedFieldManager(DNStateManager sm, JSONObject jsonobj, List<AbstractMemberMetaData> mmds, Table table)
     {
         super(sm, jsonobj, table);
         this.mmds = mmds;
@@ -73,7 +73,7 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
         if (mmds.size() == 1 && embmd != null && embmd.getOwnerMember() != null && embmd.getOwnerMember().equals(mmd.getName()))
         {
             // Special case of this being a link back to the owner. TODO Repeat this for nested and their owners
-            ObjectProvider[] ownerSMs = ec.getOwnersForEmbeddedObjectProvider(sm);
+            DNStateManager[] ownerSMs = ec.getOwnersForEmbeddedStateManager(sm);
             return (ownerSMs != null && ownerSMs.length > 0 ? ownerSMs[0].getObject() : null);
         }
 
@@ -123,14 +123,14 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
                 JSONObject embobj = jsonobj.getJSONObject(name);
                 NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED; This is experimental : " + embobj);
 
-                ObjectProvider embSM = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, sm, fieldNumber);
+                DNStateManager embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, fieldNumber);
                 FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embSM, embobj, embMmds, table);
                 embSM.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
                 return embSM.getObject();
             }
 
             // Flat embedded. Stored as multiple properties in the owner object
-            ObjectProvider embSM = ec.getNucleusContext().getObjectProviderFactory().newForEmbedded(ec, embCmd, sm, fieldNumber);
+            DNStateManager embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, fieldNumber);
             FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embSM, jsonobj, embMmds, table);
             embSM.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
             return embSM.getObject();
