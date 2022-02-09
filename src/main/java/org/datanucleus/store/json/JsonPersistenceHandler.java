@@ -120,16 +120,16 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             {
                 VersionMetaData vermd = cmd.getVersionMetaDataForClass();
                 String verColName = null;
-                if (vermd.getFieldName() != null)
+                if (vermd.getMemberName() != null)
                 {
-                    verColName = table.getMemberColumnMappingForMember(cmd.getMetaDataForMember(vermd.getFieldName())).getColumn(0).getName();
+                    verColName = table.getMemberColumnMappingForMember(cmd.getMetaDataForMember(vermd.getMemberName())).getColumn(0).getName();
                 }
                 else
                 {
                     verColName = table.getSurrogateColumn(SurrogateColumnType.VERSION).getName(); // TODO Version stored in field?
                 }
 
-                if (vermd.getVersionStrategy() == VersionStrategy.VERSION_NUMBER)
+                if (vermd.getStrategy() == VersionStrategy.VERSION_NUMBER)
                 {
                     long versionNumber = 1;
                     sm.setTransactionalVersion(Long.valueOf(versionNumber));
@@ -147,10 +147,10 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                         throw new NucleusException("Exception setting version in JSON object", e);
                     }
 
-                    if (vermd.getFieldName() != null)
+                    if (vermd.getMemberName() != null)
                     {
                         // Version is stored in a field, so set it there too
-                        AbstractMemberMetaData verfmd = cmd.getMetaDataForMember(vermd.getFieldName());
+                        AbstractMemberMetaData verfmd = cmd.getMetaDataForMember(vermd.getMemberName());
                         if (verfmd.getType() == Integer.class)
                         {
                             sm.replaceField(verfmd.getAbsoluteFieldNumber(), Integer.valueOf((int) versionNumber));
@@ -161,7 +161,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                         }
                     }
                 }
-                else if (vermd.getVersionStrategy() == VersionStrategy.DATE_TIME)
+                else if (vermd.getStrategy() == VersionStrategy.DATE_TIME)
                 {
                     Date date = new Date();
                     Timestamp ts = new Timestamp(date.getTime());
@@ -239,10 +239,10 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             {
                 // Version object so calculate version to store with
                 VersionMetaData vermd = cmd.getVersionMetaDataForClass();
-                if (vermd.getFieldName() != null)
+                if (vermd.getMemberName() != null)
                 {
                     // Version field
-                    AbstractMemberMetaData verMmd = cmd.getMetaDataForMember(vermd.getFieldName());
+                    AbstractMemberMetaData verMmd = cmd.getMetaDataForMember(vermd.getMemberName());
                     if (currentVersion instanceof Integer)
                     {
                         // Cater for Integer-based versions TODO Generalise this
@@ -302,9 +302,9 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
             {
                 VersionMetaData vermd = cmd.getVersionMetaDataForClass();
                 String verColName = null;
-                if (vermd.getFieldName() != null)
+                if (vermd.getMemberName() != null)
                 {
-                    verColName = table.getMemberColumnMappingForMember(cmd.getMetaDataForMember(vermd.getFieldName())).getColumn(0).getName();
+                    verColName = table.getMemberColumnMappingForMember(cmd.getMetaDataForMember(vermd.getMemberName())).getColumn(0).getName();
                 }
                 else
                 {
@@ -312,7 +312,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                     verColName = table.getSurrogateColumn(SurrogateColumnType.VERSION).getName();
                 }
 
-                if (vermd.getVersionStrategy() == VersionStrategy.VERSION_NUMBER)
+                if (vermd.getStrategy() == VersionStrategy.VERSION_NUMBER)
                 {
                     if (NucleusLogger.DATASTORE.isDebugEnabled())
                     {
@@ -328,7 +328,7 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                         throw new NucleusException(e.getMessage(), e);
                     }
                 }
-                else if (vermd.getVersionStrategy() == VersionStrategy.DATE_TIME)
+                else if (vermd.getStrategy() == VersionStrategy.DATE_TIME)
                 {
                     if (NucleusLogger.DATASTORE.isDebugEnabled())
                     {
@@ -804,25 +804,25 @@ public class JsonPersistenceHandler extends AbstractPersistenceHandler
                     // Extract the version for applying to the object
                     VersionMetaData vermd = cmd.getVersionMetaDataForClass();
                     String verColName = null;
-                    if (vermd.getFieldName() == null)
+                    if (vermd.getMemberName() == null)
                     {
                         // Surrogate version
                         verColName = table.getSurrogateColumn(SurrogateColumnType.VERSION).getName();
                     }
                     else
                     {
-                        verColName = table.getMemberColumnMappingForMember(cmd.getMetaDataForMember(vermd.getFieldName())).getColumn(0).getName();
+                        verColName = table.getMemberColumnMappingForMember(cmd.getMetaDataForMember(vermd.getMemberName())).getColumn(0).getName();
                     }
 
                     long versionLong = -1;
                     try
                     {
                         versionLong = json.getLong(verColName);
-                        if (vermd.getVersionStrategy() == VersionStrategy.VERSION_NUMBER)
+                        if (vermd.getStrategy() == VersionStrategy.VERSION_NUMBER)
                         {
                             version = versionLong;
                         }
-                        else if (vermd.getVersionStrategy() == VersionStrategy.DATE_TIME)
+                        else if (vermd.getStrategy() == VersionStrategy.DATE_TIME)
                         {
                             version = new Timestamp(versionLong);
                         }
