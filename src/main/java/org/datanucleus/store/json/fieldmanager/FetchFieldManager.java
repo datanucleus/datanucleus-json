@@ -272,7 +272,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             // Embedded field
             try
             {
-                return fetchObjectFieldEmbedded(fieldNumber, mmd, clr, relationType);
+                return fetchObjectFieldEmbedded(mmd, clr, relationType);
             }
             catch (JSONException e)
             {
@@ -282,7 +282,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
         try
         {
-            return fetchObjectFieldInternal(fieldNumber, mmd, clr, relationType);
+            return fetchObjectFieldInternal(mmd, clr, relationType);
         }
         catch (JSONException e)
         {
@@ -290,7 +290,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
         }
     }
 
-    protected Object fetchObjectFieldEmbedded(int fieldNumber, AbstractMemberMetaData mmd, ClassLoaderResolver clr, RelationType relationType)
+    protected Object fetchObjectFieldEmbedded(AbstractMemberMetaData mmd, ClassLoaderResolver clr, RelationType relationType)
     throws JSONException
     {
         // Embedded field
@@ -305,7 +305,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             if (nested)
             {
                 // Nested embedded object. JSONObject stored under this name
-                MemberColumnMapping mapping = getColumnMapping(fieldNumber);
+                MemberColumnMapping mapping = getColumnMapping(mmd.getAbsoluteFieldNumber());
                 String name = (mapping != null ? mapping.getColumn(0).getName() : mmd.getName());
                 if (jsonobj.isNull(name))
                 {
@@ -314,7 +314,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                 JSONObject embobj = jsonobj.getJSONObject(name);
                 NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED; This is experimental : " + embobj);
 
-                DNStateManager embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, fieldNumber);
+                DNStateManager embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, mmd.getAbsoluteFieldNumber());
                 FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embSM, embobj, embMmds, table);
                 embSM.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
                 return embSM.getObject();
@@ -322,7 +322,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
             // Flat embedded. Stored as multiple properties in the owner object
             // TODO Null detection
-            DNStateManager embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, fieldNumber);
+            DNStateManager embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, mmd.getAbsoluteFieldNumber());
             FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embSM, jsonobj, embMmds, table);
             embSM.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
             return embSM.getObject();
@@ -335,7 +335,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
         return null;
     }
 
-    protected Object fetchObjectFieldInternal(int fieldNumber, AbstractMemberMetaData mmd, ClassLoaderResolver clr, RelationType relationType)
+    protected Object fetchObjectFieldInternal(AbstractMemberMetaData mmd, ClassLoaderResolver clr, RelationType relationType)
     throws JSONException
     {
         boolean optional = false;
@@ -348,7 +348,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             optional = true;
         }
 
-        MemberColumnMapping mapping = getColumnMapping(fieldNumber);
+        MemberColumnMapping mapping = getColumnMapping(mmd.getAbsoluteFieldNumber());
         if (relationType == RelationType.NONE)
         {
             Object returnValue = null;
@@ -440,7 +440,7 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                     Object memberValue = conv.toMemberType(valuesArr);
                     if (sm != null && memberValue != null)
                     {
-                        memberValue = SCOUtils.wrapSCOField(sm, fieldNumber, memberValue, true);
+                        memberValue = SCOUtils.wrapSCOField(sm, mmd.getAbsoluteFieldNumber(), memberValue, true);
                     }
                     return memberValue;
                 }

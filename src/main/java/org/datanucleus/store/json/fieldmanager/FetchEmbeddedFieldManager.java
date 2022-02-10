@@ -64,6 +64,7 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
         return table.getMemberColumnMappingForEmbeddedMember(embMmds);
     }
 
+    @Override
     public Object fetchObjectField(int fieldNumber)
     {
         AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(fieldNumber);
@@ -82,7 +83,7 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
             // Embedded field
             try
             {
-                return fetchObjectFieldEmbedded(fieldNumber, mmd, clr, relationType);
+                return fetchObjectFieldEmbedded(mmd, clr, relationType);
             }
             catch (JSONException e)
             {
@@ -92,7 +93,7 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
 
         try
         {
-            return fetchObjectFieldInternal(fieldNumber, mmd, clr, relationType);
+            return fetchObjectFieldInternal(mmd, clr, relationType);
         }
         catch (JSONException e)
         {
@@ -100,7 +101,8 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
         }
     }
 
-    protected Object fetchObjectFieldEmbedded(int fieldNumber, AbstractMemberMetaData mmd, ClassLoaderResolver clr, RelationType relationType)
+    @Override
+    protected Object fetchObjectFieldEmbedded(AbstractMemberMetaData mmd, ClassLoaderResolver clr, RelationType relationType)
     throws JSONException
     {
         if (RelationType.isRelationSingleValued(relationType))
@@ -114,7 +116,7 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
             if (nested)
             {
                 // Nested embedded object. JSONObject stored under this name
-                MemberColumnMapping mapping = getColumnMapping(fieldNumber);
+                MemberColumnMapping mapping = getColumnMapping(mmd.getAbsoluteFieldNumber());
                 String name = (mapping != null ? mapping.getColumn(0).getName() : mmd.getName());
                 if (jsonobj.isNull(name))
                 {
@@ -123,14 +125,14 @@ public class FetchEmbeddedFieldManager extends FetchFieldManager
                 JSONObject embobj = jsonobj.getJSONObject(name);
                 NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED; This is experimental : " + embobj);
 
-                DNStateManager embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, fieldNumber);
+                DNStateManager embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, mmd.getAbsoluteFieldNumber());
                 FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embSM, embobj, embMmds, table);
                 embSM.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
                 return embSM.getObject();
             }
 
             // Flat embedded. Stored as multiple properties in the owner object
-            DNStateManager embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, fieldNumber);
+            DNStateManager embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, mmd.getAbsoluteFieldNumber());
             FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embSM, jsonobj, embMmds, table);
             embSM.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
             return embSM.getObject();
