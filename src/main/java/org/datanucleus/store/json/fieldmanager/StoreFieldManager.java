@@ -322,7 +322,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
 
                 List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>();
                 embMmds.add(mmd);
-                DNStateManager embSM = ec.findStateManagerForEmbedded(value, sm, mmd);
+                DNStateManager embSM = ec.findStateManagerForEmbedded(value, sm, mmd, null);
                 StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(embSM, embobj, insert, embMmds, table);
                 embSM.provideFields(embCmd.getAllMemberPositions(), storeEmbFM);
                 NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED. This is experimental : " + embobj);
@@ -363,7 +363,7 @@ public class StoreFieldManager extends AbstractStoreFieldManager
                 return;
             }
 
-            DNStateManager embSM = ec.findStateManagerForEmbedded(value, sm, mmd);
+            DNStateManager embSM = ec.findStateManagerForEmbedded(value, sm, mmd, null);
             StoreEmbeddedFieldManager storeEmbFM = new StoreEmbeddedFieldManager(embSM, jsonobj, insert, embMmds, table);
             embSM.provideFields(embMmdPosns, storeEmbFM);
             return;
