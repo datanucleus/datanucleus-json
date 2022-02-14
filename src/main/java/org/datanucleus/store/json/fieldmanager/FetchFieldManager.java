@@ -33,6 +33,7 @@ import java.util.Optional;
 
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ExecutionContext;
+import org.datanucleus.PersistableObjectType;
 import org.datanucleus.exceptions.NucleusDataStoreException;
 import org.datanucleus.exceptions.NucleusException;
 import org.datanucleus.exceptions.NucleusObjectNotFoundException;
@@ -314,7 +315,8 @@ public class FetchFieldManager extends AbstractFetchFieldManager
                 JSONObject embobj = jsonobj.getJSONObject(name);
                 NucleusLogger.PERSISTENCE.warn("Member " + mmd.getFullFieldName() + " marked as embedded NESTED; This is experimental : " + embobj);
 
-                DNStateManager embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, mmd.getAbsoluteFieldNumber(), null);
+                DNStateManager embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, mmd.getAbsoluteFieldNumber(),
+                    PersistableObjectType.EMBEDDED_PC);
                 FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embSM, embobj, embMmds, table);
                 embSM.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
                 return embSM.getObject();
@@ -322,7 +324,8 @@ public class FetchFieldManager extends AbstractFetchFieldManager
 
             // Flat embedded. Stored as multiple properties in the owner object
             // TODO Null detection
-            DNStateManager embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, mmd.getAbsoluteFieldNumber(), null);
+            DNStateManager embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, mmd.getAbsoluteFieldNumber(),
+                PersistableObjectType.EMBEDDED_PC);
             FieldManager fetchEmbFM = new FetchEmbeddedFieldManager(embSM, jsonobj, embMmds, table);
             embSM.replaceFields(embCmd.getAllMemberPositions(), fetchEmbFM);
             return embSM.getObject();

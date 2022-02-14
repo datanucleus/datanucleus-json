@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ExecutionContext;
+import org.datanucleus.PersistableObjectType;
 import org.datanucleus.exceptions.NucleusException;
 import org.datanucleus.metadata.AbstractClassMetaData;
 import org.datanucleus.metadata.AbstractMemberMetaData;
@@ -166,11 +167,11 @@ public class StoreEmbeddedFieldManager extends StoreFieldManager
                 DNStateManager embSM = null;
                 if (value != null)
                 {
-                    embSM = ec.findStateManagerForEmbedded(value, sm, mmd, null);
+                    embSM = ec.findStateManagerForEmbedded(value, sm, mmd, PersistableObjectType.EMBEDDED_PC);
                 }
                 else
                 {
-                    embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, fieldNumber, null);
+                    embSM = ec.getNucleusContext().getStateManagerFactory().newForEmbedded(ec, embCmd, sm, fieldNumber, PersistableObjectType.EMBEDDED_PC);
                 }
 
                 List<AbstractMemberMetaData> embMmds = new ArrayList<AbstractMemberMetaData>(mmds);
