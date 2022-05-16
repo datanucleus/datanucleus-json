@@ -22,8 +22,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -1010,42 +1008,26 @@ public class FetchFieldManager extends AbstractFetchFieldManager
             // Try to reconstruct the object as a Java bean
             try
             {
-                return AccessController.doPrivileged(new PrivilegedAction()
+                Constructor c = ClassUtils.getConstructorWithArguments(cls, new Class[]{});
+                c.setAccessible(true);
+                Object obj = c.newInstance(new Object[]{});
+                String[] fieldNames = JSONObject.getNames(jsonobj);
+                for (int i = 0; i < jsonobj.length(); i++)
                 {
-                    public Object run()
+                    //ignore class field
+                    if (!fieldNames[i].equals("class"))
                     {
-                        try
-                        {
-                            Constructor c = ClassUtils.getConstructorWithArguments(cls, new Class[]{});
-                            c.setAccessible(true);
-                            Object obj = c.newInstance(new Object[]{});
-                            String[] fieldNames = JSONObject.getNames(jsonobj);
-                            for (int i = 0; i < jsonobj.length(); i++)
-                            {
-                                //ignore class field
-                                if (!fieldNames[i].equals("class"))
-                                {
-                                    Field field = cls.getField(fieldNames[i]);
-                                    field.setAccessible(true);
-                                    field.set(obj, jsonobj.get(fieldNames[i]));
-                                }
-                            }
-                            return obj;
-                        }
-                        catch (Exception e)
-                        {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                        return null;
+                        Field field = cls.getField(fieldNames[i]);
+                        field.setAccessible(true);
+                        field.set(obj, jsonobj.get(fieldNames[i]));
                     }
-                });
+                }
+                return obj;
             }
-            catch (SecurityException ex)
+            catch (Exception e)
             {
-                ex.printStackTrace();
+                NucleusLogger.PERSISTENCE.warn("Exception converting JSON to Java", e);
             }
-
         }
         return null;
     }
